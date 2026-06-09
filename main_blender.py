@@ -174,7 +174,7 @@ if config["distortions"]["object"] == 1:
 if config["environment"]["telescope"] == 1:
 
     bpy.ops.wm.obj_import(
-        filepath="/Users/vchambouleyron/Documents/TurbuCam/simulation/VLT.obj",
+        filepath = PROJECT_ROOT /"data/VLT.obj",
 
         # ORIENTATION
         forward_axis='Z',   # typical for OBJ
