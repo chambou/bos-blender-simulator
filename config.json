@@ -1,0 +1,61 @@
+{
+    "BOS": {
+      "cameras_number": 2,
+      "cameras_spacing": 1,
+      "screen_pattern_file": "data/bos_pattern.png",
+      "distance_camera_screen": 10,
+      "height": 1
+    },
+  
+    "camera": {
+      "sensor_size": 5.6,
+      "resolution_x": 1920,
+      "resolution_y": 1080,
+      "focal_length": 50,
+      "bit_depth": "16"
+    },
+  
+    "distortions": {
+      "object": 0,
+      "object_path": "data/torus.blend",
+      "object_distance": 0.5,
+      "object_scale": 0.5,
+  
+      "turbulence": 1,
+      "turbulence_path": [
+        "data/turbulence_screen.tiff",
+        "data/turbulence_screen.tiff"
+      ],
+  
+      "turbulence_distance": [
+        0.7,
+        0.8
+      ],
+  
+      "turbulence_speed": [
+        0
+      ],
+  
+      "turbulence_strengh": [
+        1,
+        1
+      ],
+  
+      "turbulence_direction": [
+        0
+      ]
+    },
+  
+    "environment": {
+      "ambiant_light_strengh": 4,
+      "dome_walls": 1,
+      "telescope": 0
+    },
+  
+    "render": {
+      "activate_render": 0,
+      "format": "TIFF",
+      "render_path": "outputs/render_results/",
+      "active_cameras": "all"
+    }
+  }

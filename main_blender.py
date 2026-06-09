@@ -1,5 +1,5 @@
 import numpy as np
-import toml
+import json
 import bpy
 import mathutils
 from pathlib import Path
@@ -23,8 +23,10 @@ from utils_blender import *
 # --------------------------------------------------
 # Load config (portable)
 # --------------------------------------------------
-config_path = PROJECT_ROOT / "config.toml"
-config = toml.load(config_path)
+config_path = PROJECT_ROOT / "config.json"
+
+with open(config_path, "r") as f:
+    config = json.load(f)
 
 #############
 # WORLD SETUP
