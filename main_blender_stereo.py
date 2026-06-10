@@ -5,6 +5,7 @@ import mathutils
 from pathlib import Path
 import importlib
 import sys
+import math
 
 # --------------------------------------------------
 # Project root (portable Blender-safe)
@@ -172,17 +173,28 @@ if config["distortions"]["object"] == 1:
 
 if config["environment"]["breadboard"] == 1:
 
-    bpy.ops.wm.obj_import(
-        filepath = PROJECT_ROOT /"data/breadboard.obj",
-
-        # ORIENTATION
-        forward_axis='Z',   # typical for OBJ
-        up_axis='Y',
-
-        # SCALE
-        global_scale=0.0003
+    bpy.ops.wm.stl_import(
+        filepath=str(PROJECT_ROOT / "data" / "T1525D.stl"),
+        global_scale=1
     )
-    
+
+    obj = bpy.context.active_object
+
+    # rotate if needed
+    obj.rotation_euler[0] = math.radians(90)
+    obj.rotation_euler[2] = math.radians(90)
+    bpy.context.view_layer.update()
+
+    # center top surface
+    verts = [obj.matrix_world @ v.co for v in obj.data.vertices]
+
+    xs = [v.x for v in verts]
+    ys = [v.y for v in verts]
+    zs = [v.z for v in verts]
+
+    obj.location.x -= (min(xs) + max(xs)) / 2
+    obj.location.y -= (min(ys) + max(ys)) / 2
+    obj.location.z -= max(zs)
         
 ###############
 # Render 
