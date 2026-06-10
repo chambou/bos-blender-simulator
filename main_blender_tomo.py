@@ -23,7 +23,7 @@ from utils_blender import *
 # --------------------------------------------------
 # Load config (portable)
 # --------------------------------------------------
-config_path = PROJECT_ROOT / "config.json"
+config_path = PROJECT_ROOT / "config_tomo.json"
 
 with open(config_path, "r") as f:
     config = json.load(f)
@@ -84,8 +84,6 @@ for k in range(0,config["BOS"]["cameras_number"]):
 
     screen_positions.append(np.array([x_screen, y_screen, z_screen]))
     camera_positions.append(np.array([x_cam, y_cam, z_cam]))
-
-print(camera_positions)
 
 #######################################
 # Create cameras and screens 
