@@ -65,7 +65,7 @@ for obj in list(bpy.data.objects):
 
 
 size_screen_width = config["BOS"]["screen_pattern_width"]
-size_screen_height = size_screen_width * config["camera"]["resolution_y"] / config["camera"]["resolution_x"]
+size_screen_height = config["BOS"]["screen_pattern_height"]
 
 #######################################
 # Compute cameras and screen positions
