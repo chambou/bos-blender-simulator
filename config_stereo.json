@@ -13,7 +13,7 @@
       "sensor_size": 5.6,
       "resolution_x": 1920,
       "resolution_y": 1080,
-      "focal_length": 1,
+      "focal_length": 10,
       "bit_depth": "16"
     },
   
@@ -24,6 +24,7 @@
       "object_scale": 0.5,
   
       "turbulence": 1,
+      "turbulence_number": 1,
       "turbulence_path": [
         "data/turbulence_screen.tiff",
         "data/turbulence_screen.tiff"

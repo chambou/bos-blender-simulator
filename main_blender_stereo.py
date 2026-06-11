@@ -134,7 +134,9 @@ add_image_material(
 
 if config["distortions"]["turbulence"] == 1:
     
-    for k, dist in enumerate(config["distortions"]["turbulence_distance"]):
+    number = config["distortions"]["turbulence_number"]
+    
+    for k, dist in enumerate(config["distortions"]["turbulence_distance"][:number]):
 
         vector_middle_camera = np.array([0, 1, 0])
         pos = np.array([0, dist, size_screen_height / 2 + config["BOS"]["height"]])
