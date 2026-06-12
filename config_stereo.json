@@ -2,7 +2,8 @@
     "BOS": {
       "cameras_number": 2,
       "cameras_spacing": 0.1,
-      "screen_pattern_width": 0.5,
+      "cameras_toe_in_angle": 0.0,
+      "screen_pattern_width": 0.75,
       "screen_pattern_height": 0.5,
       "screen_pattern_file": "data/bos_pattern.png",
       "distance_camera_screen": 1,
@@ -13,7 +14,7 @@
       "sensor_size": 5.6,
       "resolution_x": 1920,
       "resolution_y": 1080,
-      "focal_length": 15,
+      "focal_length": 10,
       "bit_depth": "16"
     },
   

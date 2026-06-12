@@ -84,6 +84,8 @@ for k in range(0,config["BOS"]["cameras_number"]):
 # Create cameras
 #######################################
 
+toe_in_angle = np.radians(config["BOS"]["cameras_toe_in_angle"])
+
 cams = []
 for i, pos in enumerate(camera_positions):
     bpy.ops.object.camera_add(location=pos)
@@ -93,6 +95,7 @@ for i, pos in enumerate(camera_positions):
     cam.data.sensor_fit = 'HORIZONTAL'
     cam.data.display_size = 0.2
     look_at(cam, mathutils.Vector((pos+np.array([0, 1, 0])).tolist()))
+    cam.rotation_euler.rotate_axis('Y',np.sign(pos[0])*toe_in_angle)
     cam.name = f"Cam_{i}"
     cams.append(cam)
 
