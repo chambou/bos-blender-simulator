@@ -132,7 +132,7 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
     bm.to_mesh(mesh)
     bm.free()
 
-    obj.scale = (width / 2, width / 2, 1.0)
+    obj.scale = (width / 2, height / 2, 1.0)
     obj.location = mathutils.Vector(pos.tolist())
 
     direction = mathutils.Vector(vector_middle_camera.tolist()).normalized()
