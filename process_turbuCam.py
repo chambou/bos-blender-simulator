@@ -42,8 +42,8 @@ save_fits_cube = False       # save full cube as FITS file - takes time!
 show_animation = False       # show results as an animation
 refresh_delay = 0.05         # seconds between frames (e.g. 0.2 = 5 FPS)
 os.makedirs(output_folder, exist_ok=True)
-Ncams = len(glob.glob(os.path.join(input_folder, "render_ref_*.tif")))
-print(f"Found {Ncams} cameras...")
+Ncams = len(glob.glob(os.path.join(input_folder, "render_ref_*.tif")))  # how many cameras used
+print(f"Found {Ncams} camera/s...")
 
 for k in range(0,Ncams):
 
@@ -97,5 +97,10 @@ for k in range(0,Ncams):
     u, v = flow[..., 0], flow[..., 1] # Displacement in X and Y direction
     phase = reconstruct_from_gradient(u, v)
 
+    phase = -phase              # invert magnitudes (sign flip)
+    phase = np.fliplr(phase)    # invert horizontally (mirror left-right)
+
     np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp.npy'),u)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp.npy'),v)
     

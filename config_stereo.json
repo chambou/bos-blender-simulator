@@ -1,10 +1,10 @@
 {
     "BOS": {
-      "cameras_number": 2,
+      "cameras_number": 1,
       "cameras_spacing": 0.1,
-      "cameras_toe_in_angle": 0.0,
-      "screen_pattern_width": 0.75,
-      "screen_pattern_height": 0.5,
+      "cameras_toe_in_angle": 0,
+      "screen_pattern_width": 0.6,
+      "screen_pattern_height": 0.6,
       "screen_pattern_file": "data/bos_pattern.png",
       "distance_camera_screen": 1,
       "height": 0.2
@@ -27,7 +27,7 @@
       "turbulence": 1,
       "turbulence_number": 1,
       "turbulence_path": [
-        "data/turbulence_screen1.tiff",
+        "data/turbulence_screen.tiff",
         "data/turbulence_screen.tiff"
       ],
   
@@ -56,7 +56,7 @@
     },
   
     "render": {
-      "activate_render": 0,
+      "activate_render": 1,
       "format": "TIFF",
       "render_path": "outputs/render_results/",
       "active_cameras": "all"

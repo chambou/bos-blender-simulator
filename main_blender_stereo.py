@@ -84,7 +84,7 @@ for k in range(0,config["BOS"]["cameras_number"]):
 # Create cameras
 #######################################
 
-toe_in_angle = np.radians(config["BOS"]["cameras_toe_in_angle"])
+toe_in_angle = config["BOS"]["cameras_toe_in_angle"]
 
 cams = []
 for i, pos in enumerate(camera_positions):
@@ -95,7 +95,7 @@ for i, pos in enumerate(camera_positions):
     cam.data.sensor_fit = 'HORIZONTAL'
     cam.data.display_size = 0.2
     look_at(cam, mathutils.Vector((pos+np.array([0, 1, 0])).tolist()))
-    cam.rotation_euler.rotate_axis('Y',np.sign(pos[0])*toe_in_angle)
+    cam.rotation_euler.rotate_axis('Y',np.sign(pos[0])*np.radians(toe_in_angle))
     cam.name = f"Cam_{i}"
     cams.append(cam)
 
@@ -143,9 +143,11 @@ if config["distortions"]["turbulence"] == 1:
 
         vector_middle_camera = np.array([0, 1, 0])
         pos = np.array([0, dist, size_screen_height / 2 + config["BOS"]["height"]])
-        width= size_screen_width
-        height= size_screen_height
-
+        #width= size_screen_width
+        #height= size_screen_height
+        #width = ((config["camera"]["sensor_size"]/config["camera"]["focal_length"])*config["distortions"]["turbulence_distance"][k])*1.1
+        width = 0.2
+        height = width
         create_turbu_screen(vector_middle_camera, pos, width, height,config["distortions"]["turbulence_path"][k] )
 
 
@@ -223,7 +225,7 @@ if config["render"]["activate_render"] == 1:
     for k, cam in enumerate(cams):
         if config["render"]["active_cameras"] == "all" or k in config["render"]["active_cameras"]:
             scene.camera = cam
-            scene.render.filepath = config["render"]["render_path"]+f"render_ref_{k}"
+            scene.render.filepath = config["render"]["render_path"]+f"render_ref_{toe_in_angle}deg_{k}"
             
             prefix_turbu = "TurbuScreen"
             prefix_obj = "ObjectScreen"
@@ -240,7 +242,7 @@ if config["render"]["activate_render"] == 1:
     for k, cam in enumerate(cams):
         if config["render"]["active_cameras"] == "all" or k in config["render"]["active_cameras"]:
             scene.camera = cam
-            scene.render.filepath = config["render"]["render_path"]+f"render_{k}"
+            scene.render.filepath = config["render"]["render_path"]+f"render_{toe_in_angle}deg_{k}"
             
             prefix_turbu = "TurbuScreen"
             prefix_obj = "ObjectScreen"
