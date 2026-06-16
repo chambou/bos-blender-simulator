@@ -14,6 +14,14 @@ array = np.load('outputs/processing_results/cam0_phase.npy')
 plt.figure()
 plt.imshow(array)
 plt.show(block=False)
+plt.colorbar()
+
+array = np.load('outputs/processing_results/cam0_phase_pred.npy')
+
+plt.figure()
+plt.imshow(array)
+plt.show(block=False)
+plt.colorbar()
 
 array = np.load('outputs/processing_results/cam0_xdisp.npy')
 
@@ -26,5 +34,19 @@ array = np.load('outputs/processing_results/cam0_ydisp.npy')
 
 plt.figure()
 plt.imshow(array)
-plt.show()
+plt.show(block=False)
 plt.colorbar()
+
+array = np.load('outputs/processing_results/cam0_xdisp_pred.npy')
+
+plt.figure()
+plt.imshow(array)
+plt.show(block=False)
+plt.colorbar()
+
+array = np.load('outputs/processing_results/cam0_ydisp_pred.npy')
+
+plt.figure()
+plt.imshow(array)
+plt.colorbar()
+plt.show()

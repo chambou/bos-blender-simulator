@@ -2,6 +2,7 @@ import numpy as np
 import tifffile as tiff
 import matplotlib.pyplot as plt
 from pathlib import Path
+import os
 
 output_file = Path("data") / "turbulence_screen.tiff"
 
@@ -35,7 +36,7 @@ def field(size=200):
     k2[0, 0] = 1
 
     # Power-law spectrum
-    spectrum = k2 ** (-3.0)
+    spectrum = k2 ** (-4.0)
 
     # Complex Gaussian white noise in Fourier space
     noise = np.random.randn(size, size) + 1j * np.random.randn(size, size)
@@ -64,13 +65,14 @@ f -= np.mean(f)
 f /= (np.max(np.abs(f)) + 1e-8)
 
 # Scale amplitude to ensure visible contrast
-f *= 0.5
+f *= 1e-9
 
 # --------------------------------------------------
 # Save as 32-bit floating-point TIFF
 # --------------------------------------------------
-output_file = "data/turbulence_screen3.tiff"
+output_file = "data/turbulence_screen6.tiff"
 
 tiff.imwrite(output_file, f.astype(np.float32))
+np.save(output_file[:-5] + ".npy",f)
 
 print(f"Field saved to: {output_file}")

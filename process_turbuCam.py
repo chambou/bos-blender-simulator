@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import tifffile as tiff
 from scipy.fft import fft2, ifft2
 from pathlib import Path
+import json
 
 def reconstruct_from_gradient(gx, gy):
     """
@@ -30,6 +31,26 @@ def reconstruct_from_gradient(gx, gy):
     f -= f.mean()  # remove arbitrary constant
 
     return f
+
+
+def predict_eps_phase(L, N, d, n, n0):
+
+    x = np.linspace(-L/2, L/2, N)
+    X, Y = np.meshgrid(x, x)
+    r = np.hypot(X, Y)                                      # r = sqrt(X**2 + Y**2)
+    r[r == 0] = 1e-12
+
+    theta0 = np.arctan(r / d)
+    eps    = theta0 - np.arcsin((n0/n) * np.sin(theta0))   # radial deflection [rad]
+
+    eps_x = eps * X / r
+    eps_y = eps * Y / r
+
+    a = (1/(2*d)) * (1 - n0/n)         # coefficient from the derivation
+    phase = a * r**2                   # r = hypot(X, Y), physical coords [m]
+    phase -= phase.mean()
+
+    return eps_x, eps_y, phase
 
 # ------------------------------
 # CONFIGURATION
@@ -89,18 +110,49 @@ for k in range(0,Ncams):
 
     # Compute optical flow
     flow = cv2.calcOpticalFlowFarneback(
-        frames[1,...],frames[0,...], None,
+        frames[0,...],frames[1,...], None,
         pyr_scale=0.5, levels=10, winsize=15,
         iterations=3, poly_n=5, poly_sigma=1.2, flags=0
     )
-
+    
     u, v = flow[..., 0], flow[..., 1] # Displacement in X and Y direction
-    phase = reconstruct_from_gradient(u, v)
+    u = -np.fliplr(u)     # mirror x AND negate (flip reverses the x-derivative)
+    v =  np.fliplr(v)     # mirror x; y-derivative unchanged
 
-    phase = -phase              # invert magnitudes (sign flip)
-    phase = np.fliplr(phase)    # invert horizontally (mirror left-right)
+
+    # to get the expected gradient (also in pixel distance)
+    config_path = "config_stereo.json"
+    with open(config_path, "r") as f:
+        config = json.load(f)
+    f_mm = config["camera"]["focal_length"]
+    sensor_mm = config["camera"]["sensor_size"]
+    z_A = config["distortions"]["turbulence_distance"][0]
+    z_B = config["BOS"]["distance_camera_screen"]
+    z_D = z_B - z_A
+    
+    n0 = 1
+    n = 1.5
+    f_px       = f_mm / sensor_mm * 1290
+    L_glass    = 0.2                              # physical side of the square glass [m]  <-- the only new input
+
+    eps_x, eps_y, phase_pred = predict_eps_phase(L_glass, 256, z_D, n, n0)
+    # convert to pixel units
+    gain = f_px * z_D / z_B
+    print(gain)
+
+    u_pred     = eps_x * gain
+    v_pred     = eps_y * gain
+    phase_pred_px = phase_pred * gain
+
+
+    phase = reconstruct_from_gradient(u, v)
+    
 
     np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_phase_pred.npy'),phase_pred)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp.npy'),u)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp.npy'),v)
-    
+    # np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp_pred.npy'),u_pred)
+    # np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp_pred.npy'),v_pred)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp_pred.npy'),eps_x)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp_pred.npy'),eps_y)

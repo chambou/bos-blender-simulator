@@ -108,7 +108,7 @@ def add_image_material(obj, image_path):
     links.new(emission.outputs["Emission"], out.inputs["Surface"])
 
     # Strength = brightness of your "screen"
-    emission.inputs["Strength"].default_value = 1.0
+    emission.inputs["Strength"].default_value = 1.1
 
     obj.data.materials.append(mat)
 
