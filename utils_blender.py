@@ -2,6 +2,11 @@ import bpy
 import bmesh
 import numpy
 import mathutils
+import json
+
+config_path = "config_stereo.json"
+with open(config_path, "r") as f:
+    config = json.load(f)
 
 def create_hollow_cylinder(
     inner_radius=0.8,
@@ -175,7 +180,7 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
     nodes.clear()
 
     bsdf = nodes.new(type="ShaderNodeBsdfRefraction")
-    bsdf.inputs["IOR"].default_value = 1.1
+    bsdf.inputs["IOR"].default_value = config["refraction_index"]
 
     output = nodes.new(type="ShaderNodeOutputMaterial")
 
