@@ -135,15 +135,16 @@ for k in range(0,Ncams):
     f_m  = f_mm * 1e-3                                # focal length in metres
     f_px = f_mm / sensor_mm * 1290                    # focal length in pixels
     S_px = f_px * z_D / (z_D + z_A - f_m)             # exact gain [px/rad]
+    psi_screen = z_A / f_px                           # screen sampling [m/px]
 
     # deflection: pixels -> radians
     eps_x = u / S_px
     eps_y = v / S_px
 
-    # phase: pixel-integrated -> radians
-    phase_rad = phase / S_px
+    # phase: pixel-integrated -> meters
+    phase = (phase / S_px) * psi_screen
     
 
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase_rad)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp.npy'),eps_x)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp.npy'),eps_y)
