@@ -134,17 +134,18 @@ for k in range(0,Ncams):
     
     n0 = 1
     n = 1.5
-    f_px       = f_mm / sensor_mm * 1290
     L_glass    = 0.2                              # physical side of the square glass [m]  <-- the only new input
 
     eps_x, eps_y, phase_pred = predict_eps_phase(L_glass, z_D, n, n0)
     
     # convert to pixel units
-    gain = f_px * z_D / z_B                         # gain = S/psi
+    f_m  = f_mm * 1e-3                                # focal length in metres
+    f_px = f_mm / sensor_mm * 1290                    # focal length in pixels
+    S_px = f_px * z_D / (z_D + z_A - f_m)             # exact gain [px/rad]
 
-    u_pred     = eps_x * gain
-    v_pred     = eps_y * gain
-    phase_pred_px = phase_pred * gain
+    u_pred        = S_px * eps_x
+    v_pred        = S_px * eps_y
+    phase_pred_px = S_px * phase_pred
 
 
     
