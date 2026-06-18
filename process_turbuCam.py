@@ -122,7 +122,7 @@ for k in range(0,Ncams):
     phase = reconstruct_from_gradient(u, v)
 
 
-    # to get the expected gradient (also in pixel distance)
+    # conversion to physical units
     config_path = "config_stereo.json"
     with open(config_path, "r") as f:
         config = json.load(f)
@@ -131,30 +131,19 @@ for k in range(0,Ncams):
     z_A = config["distortions"]["turbulence_distance"][0]
     z_B = config["BOS"]["distance_camera_screen"]
     z_D = z_B - z_A
-    
-    n0 = 1
-    n = 1.5
-    L_glass    = 0.2                              # physical side of the square glass [m]  <-- the only new input
 
-    eps_x, eps_y, phase_pred = predict_eps_phase(L_glass, z_D, n, n0)
-    
-    # convert to pixel units
     f_m  = f_mm * 1e-3                                # focal length in metres
     f_px = f_mm / sensor_mm * 1290                    # focal length in pixels
     S_px = f_px * z_D / (z_D + z_A - f_m)             # exact gain [px/rad]
 
-    u_pred        = S_px * eps_x
-    v_pred        = S_px * eps_y
-    phase_pred_px = S_px * phase_pred
+    # deflection: pixels -> radians
+    eps_x = u / S_px
+    eps_y = v / S_px
 
-
+    # phase: pixel-integrated -> radians
+    phase_rad = phase / S_px
     
 
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_phase_pred.npy'),phase_pred_px)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp.npy'),u)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp.npy'),v)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp_pred.npy'),u_pred)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp_pred.npy'),v_pred)
-    #np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp_pred.npy'),eps_x)
-    #np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp_pred.npy'),eps_y)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase_rad)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp.npy'),eps_x)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp.npy'),eps_y)
