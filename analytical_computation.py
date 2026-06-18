@@ -45,7 +45,7 @@ z_B = config["BOS"]["distance_camera_screen"]
 z_D = z_B - z_A
 
 n0 = 1
-n = config["refraction_index"]
+n = config["refractive_index"]
 L_glass    = 0.2                              # physical side of the square glass [m]  <-- the only new input
 
 eps_x, eps_y, phase_pred = predict_eps_phase(L_glass, z_D, n, n0)

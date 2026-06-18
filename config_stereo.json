@@ -61,5 +61,5 @@
       "render_path": "outputs/render_results/",
       "active_cameras": "all"
     },
-    "refraction_index": 1.1
+    "refractive_index": 1.1
   }
