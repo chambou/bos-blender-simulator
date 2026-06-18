@@ -2,11 +2,12 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 
-im = Image.open("data/turbulence_screen5.tiff")
+im = Image.open("data/turbulence_screen4.tiff")
 
 plt.figure()
 plt.imshow(np.array(im),cmap='viridis')
 plt.show(block=False)
+plt.colorbar()
 
 
 array = np.load('outputs/processing_results/cam0_phase.npy')

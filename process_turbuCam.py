@@ -119,6 +119,8 @@ for k in range(0,Ncams):
     u = -np.fliplr(u)     # mirror x AND negate (flip reverses the x-derivative)
     v =  np.fliplr(v)     # mirror x; y-derivative unchanged
 
+    phase = reconstruct_from_gradient(u, v)
+
 
     # to get the expected gradient (also in pixel distance)
     config_path = "config_stereo.json"
@@ -131,20 +133,20 @@ for k in range(0,Ncams):
     z_D = z_B - z_A
     
     n0 = 1
-    n = 1.1
+    n = 1.5
     f_px       = f_mm / sensor_mm * 1290
     L_glass    = 0.2                              # physical side of the square glass [m]  <-- the only new input
 
     eps_x, eps_y, phase_pred = predict_eps_phase(L_glass, z_D, n, n0)
+    
     # convert to pixel units
-    gain = f_px * z_D / z_B
+    gain = f_px * z_D / z_B                         # gain = S/psi
 
     u_pred     = eps_x * gain
     v_pred     = eps_y * gain
     phase_pred_px = phase_pred * gain
 
 
-    phase = reconstruct_from_gradient(u, v)
     
 
     np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase)
