@@ -59,9 +59,9 @@ u_pred        = S_px * eps_x
 v_pred        = S_px * eps_y
 phase_pred_px = S_px * phase_pred
 
-np.save(os.path.join(output_folder,'analytical_phase_px_pred.npy'),phase_pred_px)
-np.save(os.path.join(output_folder,'analytical_xdisp_px_pred.npy'),u_pred)
-np.save(os.path.join(output_folder,'analytical_ydisp_px_pred.npy'),v_pred)
-np.save(os.path.join(output_folder,'analytical_phase_pred.npy'),phase_pred)
-np.save(os.path.join(output_folder,'analytical_xdisp_pred.npy'),eps_x)
-np.save(os.path.join(output_folder,'analytical_ydisp_pred.npy'),eps_y)
+np.save(os.path.join(output_folder,'analytical_phase_px.npy'),phase_pred_px)
+np.save(os.path.join(output_folder,'analytical_xdisp_px.npy'),u_pred)
+np.save(os.path.join(output_folder,'analytical_ydisp_px.npy'),v_pred)
+np.save(os.path.join(output_folder,'analytical_phase.npy'),phase_pred)
+np.save(os.path.join(output_folder,'analytical_xdisp.npy'),eps_x)
+np.save(os.path.join(output_folder,'analytical_ydisp.npy'),eps_y)

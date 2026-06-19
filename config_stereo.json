@@ -1,6 +1,6 @@
 {
     "BOS": {
-      "cameras_number": 1,
+      "cameras_number": 2,
       "cameras_spacing": 0.1,
       "cameras_toe_in_angle": 0,
       "screen_pattern_width": 0.6,
