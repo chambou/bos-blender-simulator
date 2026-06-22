@@ -3,7 +3,7 @@
       "cameras_number": 2,
       "cameras_spacing": 0.1,
       "cameras_toe_in_angle": 0,
-      "screen_pattern_width": 0.6,
+      "screen_pattern_width": 0.8,
       "screen_pattern_height": 0.6,
       "screen_pattern_file": "data/bos_pattern.png",
       "distance_camera_screen": 1,
@@ -27,7 +27,7 @@
       "turbulence": 1,
       "turbulence_number": 1,
       "turbulence_path": [
-        "data/turbulence_screen5.tiff",
+        "data/turbulence_screen6.tiff",
         "data/turbulence_screen.tiff"
       ],
   

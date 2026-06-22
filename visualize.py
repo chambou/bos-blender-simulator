@@ -2,7 +2,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 
-im = Image.open("data/turbulence_screen4.tiff")
+im = Image.open("data/turbulence_screen6.tiff")
 
 plt.figure()
 plt.imshow(np.array(im),cmap='viridis')

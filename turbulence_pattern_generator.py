@@ -65,7 +65,7 @@ f -= np.mean(f)
 f /= (np.max(np.abs(f)) + 1e-8)
 
 # Scale amplitude to ensure visible contrast
-f *= 1e-9
+f *= 0.5
 
 # --------------------------------------------------
 # Save as 32-bit floating-point TIFF
