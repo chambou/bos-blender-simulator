@@ -53,19 +53,9 @@ def suppress_nearby_extrema(coords, img, min_distance):
     
     return np.array(kept)
 
-def remove_edge_extrema(extrema, image_shape, margin):
-    """
-    Remove extrema closer than `margin` pixels from any image border.
-    """
-    height, width = image_shape
-    filtered = [
-        (y, x)
-        for y, x in extrema
-        if margin <= y < height - margin and margin <= x < width - margin
-    ]
-    return np.array(filtered, dtype=int)
-
 def compute_thresholds(img, threshold_mult):
+    # This computes a threshold to what counts as extrema, if theyre higher than the high and lower than the low value.
+    # defined by the the values of the mean plus/minus a factor of its standard deviation
     mean_val = np.mean(img)
     std_val = np.std(img)
     threshold_high = mean_val + threshold_mult * std_val
@@ -124,6 +114,47 @@ def match_extrema(img_left, img_right, extrema_L, window_size, search_range):
     
     return matches
 
+def correlation_1d(img_left, img_right, kernel_center, kernel_width):
+    correlation = []
+    kernel_height = img_left.shape[0]
+    half_win_width = kernel_width // 2
+    img_center = kernel_center
+
+    # Extract window
+    y1, y2 = 0, img_left.shape[0]
+    x1 = img_center - half_win_width
+    x2 = x1 + kernel_width 
+
+    best_corr = -np.inf
+    best_x_R = None
+
+    # create left image patch
+    patch_L = img_left[y1:y2, x1:x2].astype(np.float32)
+
+    # Search for best match in right image (constrained by baseline)
+    # For parallel stereo, extrema should be at similar y, but different x (disparity)
+    search_x_min = half_win_width
+    search_x_max = img_right.shape[1] - half_win_width  # Right image should be to the left or same x
+
+    axis = []
+    for x_R in range(search_x_min, search_x_max):
+        x1_R = x_R - half_win_width
+        x2_R = x1_R + kernel_width
+        
+        patch_R = img_right[y1:y2, x1_R:x2_R].astype(np.float32)
+        
+        # Normalized cross-correlation (only if patches are same size and nonzero)
+        if patch_L.shape == patch_R.shape and patch_L.std() > 0 and patch_R.std() > 0:
+            corr = np.corrcoef(patch_L.ravel(), patch_R.ravel())[0, 1]
+            correlation.append(corr)
+            if corr > best_corr:
+                best_corr = corr
+                best_x_R = x_R
+        axis.append(x_R)
+
+    return axis, correlation, best_x_R
+
+
 # Load phase arrays
 cam0 = np.load(os.path.join(input_folder,'cam0_phase.npy'))
 cam1 = np.load(os.path.join(input_folder,'cam1_phase.npy'))
@@ -133,7 +164,7 @@ img_right = to_image(cam1)
 # Tuning parameters (adjust based on your phase pattern)
 size = 51                                    # Larger neighborhood = fewer extrema
 threshold_mult = 1.5                         # Stricter = fewer extrema
-min_distance_NMS = 30                        # Cluster suppression radius
+min_distance_NMS = 80                        # Cluster suppression radius
 
 # Find candidate extrema
 left_threshold_high, left_threshold_low = compute_thresholds(img_left,threshold_mult)
@@ -144,19 +175,27 @@ extrema_candidates_L = np.argwhere(local_max | local_min)
 # Suppress nearby ones
 extrema_L = suppress_nearby_extrema(extrema_candidates_L, img_left, min_distance=min_distance_NMS)
 
-# remove edge extrema
-margin = 11 // 2
-extrema_L = remove_edge_extrema(extrema_L, img_left.shape, margin)
-
 print(f"After filtering: {len(extrema_L)} extrema in the left image")
 
 # --- Match extrema across images using cross-correlation ---
-window_size = 301                   # size of the local patch around extrema [px]
-search_range = 600                   # horizontal search range [px]
-matches = match_extrema(img_left, img_right, extrema_L, 
-                        window_size, search_range)
+# window_size = 501                   # size of the local patch around extrema [px]
+# search_range = 600                   # horizontal search range [px]
+# matches = match_extrema(img_left, img_right, extrema_L, 
+#                         window_size, search_range)
 
-print(f"Matched {len(matches)} extrema pairs")
+# print(f"Matched {len(matches)} extrema pairs")
+
+# 1-dimentional correlation
+center = (img_left.shape[1]//2) + 300
+width = img_left.shape[0]
+ax, corr_1d, best_x_R = correlation_1d(img_left, img_right, center, width)
+
+disp = center - best_x_R
+
+plt.figure()
+plt.plot(ax, corr_1d)
+plt.show()
+
 
 # --- Compute depth for each match ---
 config_path = "config_stereo.json"
@@ -170,81 +209,83 @@ W_px = config["camera"]["resolution_x"]
 
 f_px = (f_mm / sensor_mm) * W_px
 
-# Compute depth for each match
-depths = []
-for y_L, x_L, y_R, x_R, disparity, corr in matches:
-    if disparity > 0.5:  # Avoid near-zero disparities
-        Z = (f_px * B) / disparity
-        depths.append(Z)
-        print(f"Extrema at ({x_L}, {y_L}): disparity={disparity:.2f} px, depth={Z:.3f} m, corr={corr:.3f}")
+print("depth: ", (f_px * B) / disp)
 
-# --- Estimate phase screen position ---
-if depths:
-    median_depth = np.median(depths)
-    mean_depth = np.mean(depths)
-    std_depth = np.std(depths)
+# # Compute depth for each match
+# depths = []
+# for y_L, x_L, y_R, x_R, disparity, corr in matches:
+#     if disparity > 0.5:  # Avoid near-zero disparities
+#         Z = (f_px * B) / disparity
+#         depths.append(Z)
+#         print(f"Extrema at ({x_L}, {y_L}): disparity={disparity:.2f} px, depth={Z:.3f} m, corr={corr:.3f}")
+
+# # --- Estimate phase screen position ---
+# if depths:
+#     median_depth = np.median(depths)
+#     mean_depth = np.mean(depths)
+#     std_depth = np.std(depths)
     
-    print(f"\n=== Phase Screen Localization ===")
-    print(f"Median depth: {median_depth:.3f} m")
-    print(f"Mean depth:   {mean_depth:.3f} m")
-    print(f"Std dev:      {std_depth:.3f} m")
+#     print(f"\n=== Phase Screen Localization ===")
+#     print(f"Median depth: {median_depth:.3f} m")
+#     print(f"Mean depth:   {mean_depth:.3f} m")
+#     print(f"Std dev:      {std_depth:.3f} m")
 
-    # visualize matches
-    stats_text = (
-        f"Median depth: {median_depth:.3f} m\n"
-        f"Mean depth:   {mean_depth:.3f} m\n"
-        f"Std dev:      {std_depth:.3f} m"
-    )
+#     # visualize matches
+#     stats_text = (
+#         f"Median depth: {median_depth:.3f} m\n"
+#         f"Mean depth:   {mean_depth:.3f} m\n"
+#         f"Std dev:      {std_depth:.3f} m"
+#     )
 
-    fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
-    im0 = ax0.imshow(img_left, cmap='viridis')
-    ax0.set_title('Left image with extrema')
-    for y_L, x_L, y_R, x_R, disp, corr in matches[:10]:
-        ax0.plot(x_L, y_L, 'r+', markersize=10)
-    ax0.set_xlim(0, img_left.shape[1]); ax0.set_ylim(img_left.shape[0], 0)
-    # cbar0 = plt.colorbar(im0, ax=ax0)
-    # cbar0.set_label('Intensity', rotation=270, labelpad=15)
+#     fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
+#     im0 = ax0.imshow(img_left, cmap='viridis')
+#     ax0.set_title('Left image with extrema')
+#     for y_L, x_L, y_R, x_R, disp, corr in matches[:10]:
+#         ax0.plot(x_L, y_L, 'r+', markersize=10)
+#     ax0.set_xlim(0, img_left.shape[1]); ax0.set_ylim(img_left.shape[0], 0)
+#     # cbar0 = plt.colorbar(im0, ax=ax0)
+#     # cbar0.set_label('Intensity', rotation=270, labelpad=15)
 
-    im1 = ax1.imshow(img_right, cmap='viridis')
-    ax1.set_title('Right image with matched extrema')
-    for y_L, x_L, y_R, x_R, disp, corr in matches[:10]:
-        ax1.plot(x_R, y_R, 'r+', markersize=10)
-    ax1.set_xlim(0, img_right.shape[1]); ax1.set_ylim(img_right.shape[0], 0)
-    # cbar1 = plt.colorbar(im1, ax=ax1)
-    # cbar1.set_label('Intensity', rotation=270, labelpad=15)
+#     im1 = ax1.imshow(img_right, cmap='viridis')
+#     ax1.set_title('Right image with matched extrema')
+#     for y_L, x_L, y_R, x_R, disp, corr in matches[:10]:
+#         ax1.plot(x_R, y_R, 'r+', markersize=10)
+#     ax1.set_xlim(0, img_right.shape[1]); ax1.set_ylim(img_right.shape[0], 0)
+#     # cbar1 = plt.colorbar(im1, ax=ax1)
+#     # cbar1.set_label('Intensity', rotation=270, labelpad=15)
 
-    ax1.text(
-        0.02, 0.98, stats_text,
-        transform=ax1.transAxes,
-        fontsize=10,
-        color='white',
-        va='top',
-        ha='left',
-        bbox=dict(facecolor='black', alpha=0.6, edgecolor='none')
-    )
+#     ax1.text(
+#         0.02, 0.98, stats_text,
+#         transform=ax1.transAxes,
+#         fontsize=10,
+#         color='white',
+#         va='top',
+#         ha='left',
+#         bbox=dict(facecolor='black', alpha=0.6, edgecolor='none')
+#     )
 
-    plt.tight_layout()
-    plt.show()
-    fig.savefig(os.path.join(output_folder,'stereo.png'), dpi=fig.dpi)
+#     plt.tight_layout()
+#     plt.show()
+#     fig.savefig(os.path.join(output_folder,'stereo.png'), dpi=fig.dpi)
     
-else:
-    fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
-    ax0.imshow(img_left, cmap='viridis')
-    ax0.set_title('Left image with extrema')
-    for y_L, x_L, y_R, x_R, disp, corr in matches[:10]:
-        ax0.plot(x_L, y_L, 'r+', markersize=10)
-    ax0.set_xlim(0, img_left.shape[1]); ax0.set_ylim(img_left.shape[0], 0)
+# else:
+#     fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
+#     ax0.imshow(img_left, cmap='viridis')
+#     ax0.set_title('Left image with extrema')
+#     for y_L, x_L, y_R, x_R, disp, corr in matches[:10]:
+#         ax0.plot(x_L, y_L, 'r+', markersize=10)
+#     ax0.set_xlim(0, img_left.shape[1]); ax0.set_ylim(img_left.shape[0], 0)
 
-    ax1.imshow(img_right, cmap='viridis')
-    ax1.set_title('Right image with matched extrema')
-    for y_L, x_L, y_R, x_R, disp, corr in matches[:10]:
-        ax1.plot(x_R, y_R, 'r+', markersize=10)
-    ax1.set_xlim(0, img_right.shape[1]); ax1.set_ylim(img_right.shape[0], 0)
+#     ax1.imshow(img_right, cmap='viridis')
+#     ax1.set_title('Right image with matched extrema')
+#     for y_L, x_L, y_R, x_R, disp, corr in matches[:10]:
+#         ax1.plot(x_R, y_R, 'r+', markersize=10)
+#     ax1.set_xlim(0, img_right.shape[1]); ax1.set_ylim(img_right.shape[0], 0)
 
 
-    plt.tight_layout()
-    plt.colorbar()
-    plt.show()
-    fig.savefig(os.path.join(output_folder,'stereo.png'), dpi=fig.dpi)
+#     plt.tight_layout()
+#     plt.colorbar()
+#     plt.show()
+#     fig.savefig(os.path.join(output_folder,'stereo.png'), dpi=fig.dpi)
     
-    print("No valid matches found.")
+#     print("No valid matches found.")
