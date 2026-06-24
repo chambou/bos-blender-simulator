@@ -25,10 +25,10 @@
       "object_scale": 0.5,
   
       "turbulence": 1,
-      "turbulence_number": 1,
+      "turbulence_number": 2,
       "turbulence_path": [
         "data/turbulence_screen6.tiff",
-        "data/turbulence_screen.tiff"
+        "data/turbulence_screen4.tiff"
       ],
   
       "turbulence_distance": [
