@@ -6,6 +6,7 @@ from scipy.ndimage import label
 from scipy.optimize import linear_sum_assignment
 from pathlib import Path
 import glob, os
+from scipy import signal, datasets, ndimage
 
 # ------------------------------
 # CONFIGURATION
@@ -178,62 +179,70 @@ def correlation_1d(img_left, img_right, kernel_center, kernel_width):
                 best_corr = corr
                 best_x_R = x_R_orig
         axis.append(x_R_orig)
-    return axis, corr, best_x_R
+    return axis, correlation, best_x_R
 
 def correlation_2d(cam0, cam1, kernel_center, kernel_size):
-    correlation = []
-    kernel_height = img_left.shape[0]
-    half_win_width = kernel_size[1] // 2
-    half_win_height = kernel_size[0] // 2
-    img_center = kernel_center
+    # correlation = []
+    # kernel_height = img_left.shape[0]
+    # half_win_width = kernel_size[1] // 2
+    # half_win_height = kernel_size[0] // 2
+    # img_center = kernel_center
 
-    # Extract window
-    y1, y2 = 0, img_left.shape[0]
-    x1 = img_center - half_win_width
-    x2 = x1 + kernel_size[1]
+    # # Extract window
+    # y1, y2 = 0, img_left.shape[0]
+    # x1 = img_center - half_win_width
+    # x2 = x1 + kernel_size[1]
 
-    best_corr = -np.inf
-    best_x_R = None
+    # best_corr = -np.inf
+    # best_x_R = None
 
-    # create left image patch
-    patch_L = img_left[y1:y2, x1:x2].astype(np.float32)
-        # --- extract 2 dimensional correlation ---
-    search_x_min = half_win_width
-    search_x_max = img_right.shape[1] + half_win_width  # Right image should be to the left or same x
-    search_y_min = half_win_height
-    search_y_max = img_right.shape[0] + half_win_height
+    # # create left image patch
+    # patch_L = img_left[y1:y2, x1:x2].astype(np.float32)
+    #     # --- extract 2 dimensional correlation ---
+    # search_x_min = half_win_width
+    # search_x_max = img_right.shape[1] + half_win_width  # Right image should be to the left or same x
+    # search_y_min = half_win_height
+    # search_y_max = img_right.shape[0] + half_win_height
 
-    # padding
-    img_right_padded = np.zeros((img_right.shape[0] + 2*half_win_height, img_right.shape[1] + 2*half_win_width), dtype=img_left.dtype)
-    img_right_padded[half_win_height:half_win_height + img_right.shape[0], half_win_width:half_win_width + img_right.shape[1]] = img_right
-    print(img_right_padded.shape)
+    # # padding
+    # img_right_padded = np.zeros((img_right.shape[0] + 2*half_win_height, img_right.shape[1] + 2*half_win_width), dtype=img_left.dtype)
+    # img_right_padded[half_win_height:half_win_height + img_right.shape[0], half_win_width:half_win_width + img_right.shape[1]] = img_right
+    # print(img_right_padded.shape)
 
-    axis = []
-    corr_map = np.zeros((img_right.shape), dtype=np.float32)
+    # axis = []
+    # corr_map = np.zeros((img_right.shape), dtype=np.float32)
 
-    for y_R in range(search_y_min, search_y_max):
-        y_R_orig = y_R - half_win_height
-        y1_R = y_R - half_win_height
-        y2_R = y1_R + kernel_size[0]
-        for x_R in range(search_x_min, search_x_max):
-            x_R_orig = x_R - half_win_width
-            x1_R = x_R - half_win_width
-            x2_R = x1_R + kernel_size[1]
+    # for y_R in range(search_y_min, search_y_max):
+    #     y_R_orig = y_R - half_win_height
+    #     y1_R = y_R - half_win_height
+    #     y2_R = y1_R + kernel_size[0]
+    #     for x_R in range(search_x_min, search_x_max):
+    #         x_R_orig = x_R - half_win_width
+    #         x1_R = x_R - half_win_width
+    #         x2_R = x1_R + kernel_size[1]
             
-            patch_R = img_right_padded[y1_R:y2_R, x1_R:x2_R].astype(np.float32)
+    #         patch_R = img_right_padded[y1_R:y2_R, x1_R:x2_R].astype(np.float32)
             
-            # Normalized cross-correlation (only if patches are same size and nonzero)
-            if patch_L.shape == patch_R.shape and patch_L.std() > 0 and patch_R.std() > 0:
-                corr = np.corrcoef(patch_L.ravel(), patch_R.ravel())[0, 1]
-                corr_map[y_R_orig,x_R_orig] = corr
-                correlation.append(corr)
-                if corr > best_corr:
-                    best_corr = corr
-                    best_x_R = x_R_orig
-            axis.append(x_R_orig)
-        print(f"Now at y_R = {y_R_orig}")
-    best = np.unravel_index(np.argmax(corr_map), corr_map.shape)
-    return axis, corr_map, best
+    #         # Normalized cross-correlation (only if patches are same size and nonzero)
+    #         if patch_L.shape == patch_R.shape and patch_L.std() > 0 and patch_R.std() > 0:
+    #             corr = np.corrcoef(patch_L.ravel(), patch_R.ravel())[0, 1]
+    #             corr_map[y_R_orig,x_R_orig] = corr
+    #             correlation.append(corr)
+    #             if corr > best_corr:
+    #                 best_corr = corr
+    #                 best_x_R = x_R_orig
+    #         axis.append(x_R_orig)
+    #     print(f"Now at y_R = {y_R_orig}")
+    # best = np.unravel_index(np.argmax(corr_map), corr_map.shape)
+
+    # with scipy correlate2d
+    # corr_scipy = signal.correlate2d(cam0, cam1, mode='full', boundary='fill')
+    cam0_flipped = cam0[::-1,::-1]
+    corr_scipy = signal.fftconvolve(cam1, cam0_flipped,mode='same')
+    best = np.unravel_index(np.argmax(corr_scipy), corr_scipy.shape)
+
+    # return axis, corr_map, best
+    return corr_scipy, best
 
 
 # Load phase arrays
@@ -272,8 +281,9 @@ kernel_width = img_left.shape[0]
 kernel_shape = img_left.shape
 #ax, corr_1d_8bit, best_x_R_8bit = correlation_1d(img_left, img_right, center, width)
 # without 8-bit conversion
-ax1, corr_1d, best_x_R = correlation_1d(cam0, cam1, center, kernel_width)
-ax2, corr_2d, (best_y,best_x) = correlation_2d(cam0, cam1, center, kernel_shape)
+ax, corr_1d, best_x_R = correlation_1d(cam0, cam1, center, kernel_width)
+# ax2, corr_2d, (best_y,best_x) = correlation_2d(cam0, cam1, center, kernel_shape)
+corr_2d, (best_y,best_x) = correlation_2d(cam0, cam1, center, kernel_shape)
 
 
 #disp_8bit = center - best_x_R_8bit
@@ -328,7 +338,7 @@ fig.savefig(os.path.join(output_folder,'stereo.png'), dpi=fig.dpi)
 
 
 plt.figure()
-plt.plot(ax1, corr_1d)
+plt.plot(ax, corr_1d)
 plt.title('Image Correlation')
 plt.xlim(0, img_right.shape[1]); 
 #plt.ylim(0, 1)
@@ -342,14 +352,13 @@ if config["distortions"]["turbulence_number"] == 1:
     )
 else:
     pass
-
 plt.show(block=False)
 
-
+plt.figure()
 plt.imshow(corr_2d, cmap='hot')
 plt.colorbar(label='Correlation')
 plt.plot(best_x,best_y, 'b+', markersize=15)
-plt.show
+plt.show()
 
 
 
