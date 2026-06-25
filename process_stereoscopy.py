@@ -231,6 +231,7 @@ def correlation_2d(cam0, cam1, kernel_center, kernel_size):
                     best_corr = corr
                     best_x_R = x_R_orig
             axis.append(x_R_orig)
+        print(f"Now at y_R = {y_R_orig}")
     best = np.unravel_index(np.argmax(corr_map), corr_map.shape)
     return axis, corr_map, best
 

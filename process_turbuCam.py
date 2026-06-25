@@ -117,8 +117,6 @@ for k in range(0,Ncams):
     )
     
     u, v = flow[..., 0], flow[..., 1] # Displacement in X and Y direction
-    # u = -np.fliplr(u)     # mirror x AND negate (flip reverses the x-derivative)
-    # v =  np.fliplr(v)     # mirror x; y-derivative unchanged
 
     phase = reconstruct_from_gradient(u, v)
 
@@ -148,3 +146,5 @@ for k in range(0,Ncams):
     np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp.npy'),eps_x)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp.npy'),eps_y)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp_px.npy'),u)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp_px.npy'),v)
