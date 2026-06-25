@@ -70,7 +70,7 @@ f *= 0.5
 # --------------------------------------------------
 # Save as 32-bit floating-point TIFF
 # --------------------------------------------------
-output_file = "data/turbulence_screen6.tiff"
+output_file = "data/turbulence_screen7.tiff"
 
 tiff.imwrite(output_file, f.astype(np.float32))
 np.save(output_file[:-5] + ".npy",f)
