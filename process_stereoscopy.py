@@ -290,16 +290,16 @@ cbar0 = plt.colorbar(im1, ax=ax1)
 cbar0.set_label('Intensity', rotation=270, labelpad=15)
 
 plt.tight_layout()
-plt.show()
+plt.show(block=False)
 # fig.savefig(os.path.join(output_folder,'stereo.png'), dpi=fig.dpi)
 fname = "7_7.png"
-fig.savefig(f"../Stereo/29062026/correlation_maps/turbulent/double_screen/images/{fname}", dpi=fig.dpi)
+# fig.savefig(f"../Stereo/29062026/correlation_maps/turbulent/double_screen/images/{fname}", dpi=fig.dpi)
 
 
 plt.figure()
 plt.plot(ax, corr_1d)
 plt.title('Image Correlation')
-plt.xlim(0, img_right.shape[1]); 
+plt.xlim(0, img_right.shape[1])
 #plt.ylim(0, 1)
 plt.xlabel("px")
 if config["distortions"]["turbulence_number"] == 1:
@@ -311,7 +311,7 @@ if config["distortions"]["turbulence_number"] == 1:
     )
 else:
     pass
-plt.show()
+plt.show(block=False)
 
 plt.figure()
 plt.imshow(corr_2d, cmap='hot')
@@ -325,6 +325,38 @@ plt.text(
     fontsize=10,
     bbox=dict(facecolor='black', alpha=0.5, edgecolor='none', boxstyle='round,pad=0.3')
 )
-plt.savefig(f"../Stereo/29062026/correlation_maps/turbulent/double_screen/different/{fname}", dpi=plt.gcf().dpi)
+# plt.savefig(f"../Stereo/29062026/correlation_maps/turbulent/double_screen/different/{fname}", dpi=plt.gcf().dpi)
 # plt.savefig("../Stereo/29062026/correlation_maps/turbulent/double_screen/same/1_1.png", dpi=plt.gcf().dpi)
+plt.show(block=False)
+
+
+plt.figure()
+corr1d_from_2d = corr_2d[540,:]
+plt.plot(corr1d_from_2d)
+plt.title('Correlation at the middle')
+plt.xlim(0, img_right.shape[1])
 plt.show()
+
+# print(len(corr1d_from_2d))
+# Next thing is to get the two peaks and get their disparities respectively
+# peaks, props = signal.find_peaks(corr1d_from_2d, prominence=0.05*np.max(np.abs(corr1d_from_2d)), distance=20)
+
+peaks, _ = signal.find_peaks(corr1d_from_2d)
+
+# Take the two peaks with the highest correlation values
+top_two = peaks[np.argsort(corr1d_from_2d[peaks])[-2:]]
+# Sort by prominence, keep top 2
+# order = np.argsort(props['prominences'])[::-1][:2]
+# top_two_peaks = peaks[order]
+
+# Get disparities
+center = len(corr1d_from_2d) // 2
+disparities = np.abs(top_two - center)
+
+# Convert to depths
+depths = f_px * B / disparities
+
+print(f"Top two peaks: {top_two[0]}, {top_two[1]}\n")
+print(f"Disparities: {disparities[0]}, {disparities[1]}\n")
+print(f"Predicted depths: {depths[0]}, {depths[1]}\n")
+

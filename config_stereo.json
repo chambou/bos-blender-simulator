@@ -27,8 +27,8 @@
       "turbulence": 1,
       "turbulence_number": 2,
       "turbulence_path": [
-        "data/turbulence_screen7.tiff",
-        "data/turbulence_screen7.tiff"
+        "data/turbulence_screen_flat.tiff",
+        "data/turbulence_screen_flat.tiff"
       ],
   
       "turbulence_distance": [

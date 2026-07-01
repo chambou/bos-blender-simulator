@@ -145,8 +145,10 @@ if config["distortions"]["turbulence"] == 1:
         pos = np.array([0, dist, size_screen_height / 2 + config["BOS"]["height"]])
         #width= size_screen_width
         #height= size_screen_height
-        #width = ((config["camera"]["sensor_size"]/config["camera"]["focal_length"])*config["distortions"]["turbulence_distance"][k])*1.1
-        width = 0.2
+        width = ((config["camera"]["sensor_size"]/config["camera"]["focal_length"])*config["distortions"]["turbulence_distance"][k]) * 1.2
+        # height = width * (config["camera"]["resolution_y"]/config["camera"]["resolution_x"]) * 0.95
+        # width = 0.2
+        # width = height
         height = width
         create_turbu_screen(vector_middle_camera, pos, width, height,config["distortions"]["turbulence_path"][k] )
 
