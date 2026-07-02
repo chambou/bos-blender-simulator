@@ -56,14 +56,15 @@ def predict_eps_phase(L, d, n, n0):
 # CONFIGURATION
 # ------------------------------
 
-input_folder = Path("outputs/render_results")
+# input_folder = Path("outputs/render_results")
+input_folder = Path("outputs/experiments")
 output_folder = Path("outputs/processing_results")
 reference_mode = "first"   # options: "median", "first", "previous"
 save_fits_cube = False       # save full cube as FITS file - takes time!
 show_animation = False       # show results as an animation
 refresh_delay = 0.05         # seconds between frames (e.g. 0.2 = 5 FPS)
 os.makedirs(output_folder, exist_ok=True)
-Ncams = len(glob.glob(os.path.join(input_folder, "render_ref_*.tif")))  # how many cameras used
+Ncams = len(glob.glob(os.path.join(input_folder, "*_ref_*.tif")))  # how many cameras used
 print(f"Found {Ncams} camera/s...")
 
 for k in range(0,Ncams):

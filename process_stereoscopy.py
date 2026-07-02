@@ -201,6 +201,33 @@ cam1 = np.load(os.path.join(input_folder,'cam1_phase.npy'))
 img_left  = to_image(cam0)
 img_right = to_image(cam1)
 
+# Very rough: crop 100 pixels from each side (whatever your empty region width is)
+crop = 500
+pL_cropped = cam0[:, crop:]
+pR_cropped = cam1[:, :-crop]
+print(pL_cropped.shape)
+print(pR_cropped.shape)
+
+# Now correlate the cropped maps
+H, W_new = pL_cropped.shape
+C = np.zeros(2*W_new - 1)
+
+fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
+im0 = ax0.imshow(pL_cropped, cmap='viridis')
+ax0.set_title('Left image')
+ax0.set_xlim(0, pL_cropped.shape[1]); ax0.set_ylim(pL_cropped.shape[0], 0)
+cbar0 = plt.colorbar(im0, ax=ax0)
+cbar0.set_label('Intensity', rotation=270, labelpad=15)
+
+im1 = ax1.imshow(pR_cropped, cmap='viridis')
+ax1.set_title('Right image')
+ax1.set_xlim(0, pR_cropped.shape[1]); ax1.set_ylim(pR_cropped.shape[0], 0)
+cbar0 = plt.colorbar(im1, ax=ax1)
+cbar0.set_label('Intensity', rotation=270, labelpad=15)
+
+plt.tight_layout()
+plt.show(block=False)
+
 # Tuning parameters (adjust based on your phase pattern)
 size = 51                                    # Larger neighborhood = fewer extrema
 threshold_mult = 1.5                         # Stricter = fewer extrema
@@ -234,6 +261,11 @@ kernel_shape = img_left.shape
 ax, corr_1d, best_x_R = correlation_1d(cam0, cam1, center, kernel_width)
 # ax2, corr_2d, (best_y,best_x) = correlation_2d(cam0, cam1, center, kernel_shape)
 corr_2d, (best_y,best_x) = correlation_2d(cam0, cam1, center, kernel_shape)
+
+center1 = pL_cropped.shape[1]//2
+kernel_width1 = pL_cropped.shape[1]
+ax_1, corr_1d1, best = correlation_1d(pL_cropped, pR_cropped, center1, kernel_width1)
+
 
 
 #disp_8bit = center - best_x_R_8bit
@@ -270,11 +302,6 @@ print("depth with original image (from fftconvolve): ", (f_px * B) / disp_fft)
 
 
 # --- visualize ---
-stats_text = (
-    "At best correlation:\n"
-    f"Disparity: {disp} px\n"
-    f"Depth:   {Z:.3f} m\n"
-)
 
 fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
 im0 = ax0.imshow(cam0, cmap='viridis')
@@ -295,6 +322,11 @@ plt.show(block=False)
 fname = "7_7.png"
 # fig.savefig(f"../Stereo/29062026/correlation_maps/turbulent/double_screen/images/{fname}", dpi=fig.dpi)
 
+stats_text = (
+    "At best correlation:\n"
+    f"Disparity: {disp} px\n"
+    f"Depth:   {Z:.3f} m\n"
+)
 
 plt.figure()
 plt.plot(ax, corr_1d)
@@ -335,7 +367,7 @@ corr1d_from_2d = corr_2d[540,:]
 plt.plot(corr1d_from_2d)
 plt.title('Correlation at the middle')
 plt.xlim(0, img_right.shape[1])
-plt.show()
+plt.show(block=False)
 
 # print(len(corr1d_from_2d))
 # Next thing is to get the two peaks and get their disparities respectively
@@ -343,20 +375,26 @@ plt.show()
 
 peaks, _ = signal.find_peaks(corr1d_from_2d)
 
-# Take the two peaks with the highest correlation values
-top_two = peaks[np.argsort(corr1d_from_2d[peaks])[-2:]]
-# Sort by prominence, keep top 2
-# order = np.argsort(props['prominences'])[::-1][:2]
-# top_two_peaks = peaks[order]
+# # Take the two peaks with the highest correlation values
+# top_two = peaks[np.argsort(corr1d_from_2d[peaks])[-2:]]
+# # Sort by prominence, keep top 2
+# # order = np.argsort(props['prominences'])[::-1][:2]
+# # top_two_peaks = peaks[order]
 
-# Get disparities
-center = len(corr1d_from_2d) // 2
-disparities = np.abs(top_two - center)
+# # Get disparities
+# center = len(corr1d_from_2d) // 2
+# disparities = np.abs(top_two - center)
 
-# Convert to depths
-depths = f_px * B / disparities
+# # Convert to depths
+# depths = f_px * B / disparities
 
-print(f"Top two peaks: {top_two[0]}, {top_two[1]}\n")
-print(f"Disparities: {disparities[0]}, {disparities[1]}\n")
-print(f"Predicted depths: {depths[0]}, {depths[1]}\n")
+# print(f"Top two peaks: {top_two[0]}, {top_two[1]}\n")
+# print(f"Disparities: {disparities[0]}, {disparities[1]}\n")
+# print(f"Predicted depths: {depths[0]}, {depths[1]}\n")
 
+plt.figure()
+plt.plot(ax_1, corr_1d1)
+plt.title('Cropped Image Correlation')
+plt.xlim(0, pL_cropped.shape[1])
+#plt.ylim(0, 1)
+plt.show()
