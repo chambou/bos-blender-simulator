@@ -201,32 +201,32 @@ cam1 = np.load(os.path.join(input_folder,'cam1_phase.npy'))
 img_left  = to_image(cam0)
 img_right = to_image(cam1)
 
-# Very rough: crop 100 pixels from each side (whatever your empty region width is)
-crop = 500
-pL_cropped = cam0[:, crop:]
-pR_cropped = cam1[:, :-crop]
-print(pL_cropped.shape)
-print(pR_cropped.shape)
+# # Very rough: crop 100 pixels from each side (whatever your empty region width is)
+# crop = 500
+# pL_cropped = cam0[:, crop:]
+# pR_cropped = cam1[:, :-crop]
+# print(pL_cropped.shape)
+# print(pR_cropped.shape)
 
-# Now correlate the cropped maps
-H, W_new = pL_cropped.shape
-C = np.zeros(2*W_new - 1)
+# # Now correlate the cropped maps
+# H, W_new = pL_cropped.shape
+# C = np.zeros(2*W_new - 1)
 
-fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
-im0 = ax0.imshow(pL_cropped, cmap='viridis')
-ax0.set_title('Left image')
-ax0.set_xlim(0, pL_cropped.shape[1]); ax0.set_ylim(pL_cropped.shape[0], 0)
-cbar0 = plt.colorbar(im0, ax=ax0)
-cbar0.set_label('Intensity', rotation=270, labelpad=15)
+# fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
+# im0 = ax0.imshow(pL_cropped, cmap='viridis')
+# ax0.set_title('Left image')
+# ax0.set_xlim(0, pL_cropped.shape[1]); ax0.set_ylim(pL_cropped.shape[0], 0)
+# cbar0 = plt.colorbar(im0, ax=ax0)
+# cbar0.set_label('Intensity (m)', rotation=270, labelpad=15)
 
-im1 = ax1.imshow(pR_cropped, cmap='viridis')
-ax1.set_title('Right image')
-ax1.set_xlim(0, pR_cropped.shape[1]); ax1.set_ylim(pR_cropped.shape[0], 0)
-cbar0 = plt.colorbar(im1, ax=ax1)
-cbar0.set_label('Intensity', rotation=270, labelpad=15)
+# im1 = ax1.imshow(pR_cropped, cmap='viridis')
+# ax1.set_title('Right image')
+# ax1.set_xlim(0, pR_cropped.shape[1]); ax1.set_ylim(pR_cropped.shape[0], 0)
+# cbar0 = plt.colorbar(im1, ax=ax1)
+# cbar0.set_label('Intensity (m)', rotation=270, labelpad=15)
 
-plt.tight_layout()
-plt.show(block=False)
+# plt.tight_layout()
+# plt.show(block=False)
 
 # Tuning parameters (adjust based on your phase pattern)
 size = 51                                    # Larger neighborhood = fewer extrema
@@ -262,9 +262,9 @@ ax, corr_1d, best_x_R = correlation_1d(cam0, cam1, center, kernel_width)
 # ax2, corr_2d, (best_y,best_x) = correlation_2d(cam0, cam1, center, kernel_shape)
 corr_2d, (best_y,best_x) = correlation_2d(cam0, cam1, center, kernel_shape)
 
-center1 = pL_cropped.shape[1]//2
-kernel_width1 = pL_cropped.shape[1]
-ax_1, corr_1d1, best = correlation_1d(pL_cropped, pR_cropped, center1, kernel_width1)
+# center1 = pL_cropped.shape[1]//2
+# kernel_width1 = pL_cropped.shape[1]
+# ax_1, corr_1d1, best = correlation_1d(pL_cropped, pR_cropped, center1, kernel_width1)
 
 
 
@@ -287,10 +287,21 @@ W_px = config["camera"]["resolution_x"]
 f_px = (f_mm / sensor_mm) * W_px
 Z = (f_px * B) / disp
 
-#print("depth with 8 bit image: ", (f_px * B) / disp_8bit)
-print("depth with original image: ", (f_px * B) / disp)
-print("depth with original image (from fftconvolve): ", (f_px * B) / disp_fft)
+# Configuration of the experimental setup
+B_exp = 0.06        # 6 cm
+f_mm_exp = 2.8      # computed from HFOV and sensor dimensions
+sensor_mm_exp = 3.4 # camera specification
+W_px_exp = 1280     # width resolution
 
+f_px_exp = (f_mm_exp / sensor_mm_exp) * W_px_exp
+Z_exp = (f_px_exp * B_exp) / disp
+
+
+#print("depth with 8 bit image: ", (f_px * B) / disp_8bit)
+# print("depth with original image: ", (f_px * B) / disp)
+# print("depth with original image (from fftconvolve): ", (f_px * B) / disp_fft)
+print("depth with original image: ", (f_px_exp * B_exp) / disp)
+print("depth with original image (from fftconvolve): ", (f_px_exp * B_exp) / disp_fft)
 
 # plt.figure()
 # plt.plot(ax, corr_1d)
@@ -308,13 +319,13 @@ im0 = ax0.imshow(cam0, cmap='viridis')
 ax0.set_title('Left image')
 ax0.set_xlim(0, img_left.shape[1]); ax0.set_ylim(img_left.shape[0], 0)
 cbar0 = plt.colorbar(im0, ax=ax0)
-cbar0.set_label('Intensity', rotation=270, labelpad=15)
+cbar0.set_label('Intensity (m)', rotation=270, labelpad=15)
 
 im1 = ax1.imshow(cam1, cmap='viridis')
 ax1.set_title('Right image')
 ax1.set_xlim(0, img_right.shape[1]); ax1.set_ylim(img_right.shape[0], 0)
 cbar0 = plt.colorbar(im1, ax=ax1)
-cbar0.set_label('Intensity', rotation=270, labelpad=15)
+cbar0.set_label('Intensity (m)', rotation=270, labelpad=15)
 
 plt.tight_layout()
 plt.show(block=False)
@@ -325,7 +336,7 @@ fname = "7_7.png"
 stats_text = (
     "At best correlation:\n"
     f"Disparity: {disp} px\n"
-    f"Depth:   {Z:.3f} m\n"
+    f"Depth:   {Z_exp:.3f} m\n"
 )
 
 plt.figure()
@@ -336,7 +347,7 @@ plt.xlim(0, img_right.shape[1])
 plt.xlabel("px")
 if config["distortions"]["turbulence_number"] == 1:
     plt.text(
-        1350, 0.05, stats_text,
+        150, 0.05, stats_text,
         fontsize=10,
         color='white',
         bbox=dict(facecolor='black', alpha=0.5, edgecolor='none')
@@ -367,7 +378,8 @@ corr1d_from_2d = corr_2d[540,:]
 plt.plot(corr1d_from_2d)
 plt.title('Correlation at the middle')
 plt.xlim(0, img_right.shape[1])
-plt.show(block=False)
+# plt.show(block=False)
+plt.show()
 
 # print(len(corr1d_from_2d))
 # Next thing is to get the two peaks and get their disparities respectively
@@ -392,9 +404,9 @@ peaks, _ = signal.find_peaks(corr1d_from_2d)
 # print(f"Disparities: {disparities[0]}, {disparities[1]}\n")
 # print(f"Predicted depths: {depths[0]}, {depths[1]}\n")
 
-plt.figure()
-plt.plot(ax_1, corr_1d1)
-plt.title('Cropped Image Correlation')
-plt.xlim(0, pL_cropped.shape[1])
-#plt.ylim(0, 1)
-plt.show()
+# plt.figure()
+# plt.plot(ax_1, corr_1d1)
+# plt.title('Cropped Image Correlation')
+# plt.xlim(0, pL_cropped.shape[1])
+# #plt.ylim(0, 1)
+# plt.show()

@@ -17,9 +17,13 @@ def split_cam(frame, path, mode):
     if mode == "ref":
         L_name = "exp_ref_0deg_0.tif"
         R_name = "exp_ref_0deg_1.tif"
+        print("Taking reference image...")
+        cv2.imwrite(os.path.join(path,"stereo_ref.tif"), frame)
     elif mode == "with_phase":
         L_name = "exp_0deg_0.tif"
         R_name = "exp_0deg_1.tif"
+        print("Taking non-reference image...")
+        cv2.imwrite(os.path.join(path,"stereo.tif"), frame)
 
     cv2.imwrite(os.path.join(path,L_name), img_L)
     cv2.imwrite(os.path.join(path,R_name), img_R)
@@ -28,7 +32,8 @@ output_folder = Path("outputs/experiments")
 
 # --- Specify mode ---
 setup_mode = "ref"
-# setup_mode = "with_phase"
+setup_mode = "with_phase"
+# --------------------
 
 # Open the default camera
 cam = cv2.VideoCapture(0)
@@ -58,7 +63,7 @@ while True:
         img_name = "test_image_{}.tif".format(img_counter)
         # cv2.imwrite(os.path.join(output_folder,img_name), frame)
         split_cam(frame, output_folder, setup_mode)
-        print("{} written!".format(img_name))
+        # print("{} written!".format(img_name))
         img_counter += 1
 
 cam.release()

@@ -25,7 +25,7 @@
       "object_scale": 0.5,
   
       "turbulence": 1,
-      "turbulence_number": 2,
+      "turbulence_number": 1,
       "turbulence_path": [
         "data/turbulence_screen4.tiff",
         "data/turbulence_screen7.tiff"
@@ -56,7 +56,7 @@
     },
   
     "render": {
-      "activate_render": 1,
+      "activate_render": 0,
       "format": "TIFF",
       "render_path": "outputs/render_results/",
       "active_cameras": "all"
