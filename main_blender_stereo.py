@@ -150,7 +150,8 @@ if config["distortions"]["turbulence"] == 1:
         # width = 0.2
         width = height
         # height = width
-        create_turbu_screen(vector_middle_camera, pos, width, height,config["distortions"]["turbulence_path"][k] )
+        IOR = config["refractive_index"][k]
+        create_turbu_screen(vector_middle_camera, pos, width, height,config["distortions"]["turbulence_path"][k], IOR)
 
 
 #######################################

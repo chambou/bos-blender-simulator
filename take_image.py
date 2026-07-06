@@ -32,7 +32,7 @@ output_folder = Path("outputs/experiments")
 
 # --- Specify mode ---
 setup_mode = "ref"
-setup_mode = "with_phase"
+# setup_mode = "with_phase"
 # --------------------
 
 # Open the default camera

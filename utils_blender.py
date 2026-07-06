@@ -117,7 +117,7 @@ def add_image_material(obj, image_path):
 
     obj.data.materials.append(mat)
 
-def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_path):
+def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_path, refractive_index):
 
     # =========================
     # PARAMETERS
@@ -180,7 +180,7 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
     nodes.clear()
 
     bsdf = nodes.new(type="ShaderNodeBsdfRefraction")
-    bsdf.inputs["IOR"].default_value = config["refractive_index"]
+    bsdf.inputs["IOR"].default_value = refractive_index
 
     output = nodes.new(type="ShaderNodeOutputMaterial")
 

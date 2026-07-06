@@ -189,6 +189,40 @@ def correlation_2d(cam0, cam1, kernel_center, kernel_size):
 
     return corr_scipy, best
 
+def masking(img, threshold_frac=0.1, min_region_size=500):
+    # """
+    # Create a binary mask marking pixels with significant phase content.
+    
+    # Parameters
+    # ----------
+    # phase : 2D array
+    #     Reconstructed phase map.
+    # threshold_frac : float
+    #     Threshold as a fraction of max |phase|.
+    # min_region_size : int
+    #     Minimum connected region size (pixels) to keep.
+    
+    # Returns
+    # -------
+    # mask : 2D boolean array
+    # """
+    # # Absolute threshold on phase magnitude
+    # threshold = threshold_frac * np.abs(img).max()
+    # # threshold = 1e-4
+    # mask = np.abs(img) > threshold
+    
+    # # # Optional: remove small isolated pixels (noise)
+    # # from scipy.ndimage import binary_opening, label
+    # # mask = binary_opening(mask, iterations=2)
+    
+    # # Optional: keep only large connected regions
+    # labeled, num = label(mask)
+    # for i in range(1, num + 1):
+    #     if np.sum(labeled == i) < min_region_size:
+    #         mask[labeled == i] = False
+
+    return mask
+
 # def magnitude_optical_flow(u_L, v_L, u_R, v_R):
 #     # --- this function takes the optical flow of left and right images as input and uses optical flow to see the correlation ---
 
@@ -252,6 +286,25 @@ extrema_L = suppress_nearby_extrema(extrema_candidates_L, img_left, min_distance
 
 # print(f"Matched {len(matches)} extrema pairs")
 
+# # mask the phase images before correlation
+# mask_L = masking(cam0)
+# mask_R = masking(cam1)
+# fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
+# im0 = ax0.imshow(mask_L)
+# ax0.set_title('Left image')
+# ax0.set_xlim(0, img_left.shape[1]); ax0.set_ylim(img_left.shape[0], 0)
+# cbar0 = plt.colorbar(im0, ax=ax0)
+# cbar0.set_label('Intensity (m)', rotation=270, labelpad=15)
+
+# im1 = ax1.imshow(mask_R)
+# ax1.set_title('Right image')
+# ax1.set_xlim(0, img_right.shape[1]); ax1.set_ylim(img_right.shape[0], 0)
+# cbar0 = plt.colorbar(im1, ax=ax1)
+# cbar0.set_label('Intensity (m)', rotation=270, labelpad=15)
+
+# plt.tight_layout()
+# plt.show(block=False)
+
 # --- 1-dimentional correlation ---
 center = (img_left.shape[1]//2)
 kernel_width = img_left.shape[1]
@@ -298,10 +351,10 @@ Z_exp = (f_px_exp * B_exp) / disp
 
 
 #print("depth with 8 bit image: ", (f_px * B) / disp_8bit)
-# print("depth with original image: ", (f_px * B) / disp)
-# print("depth with original image (from fftconvolve): ", (f_px * B) / disp_fft)
-print("depth with original image: ", (f_px_exp * B_exp) / disp)
-print("depth with original image (from fftconvolve): ", (f_px_exp * B_exp) / disp_fft)
+print("depth with original image: ", (f_px * B) / disp)
+print("depth with original image (from fftconvolve): ", (f_px * B) / disp_fft)
+# print("depth with original image: ", (f_px_exp * B_exp) / disp)
+# print("depth with original image (from fftconvolve): ", (f_px_exp * B_exp) / disp_fft)
 
 # plt.figure()
 # plt.plot(ax, corr_1d)
@@ -336,7 +389,7 @@ fname = "7_7.png"
 stats_text = (
     "At best correlation:\n"
     f"Disparity: {disp} px\n"
-    f"Depth:   {Z_exp:.3f} m\n"
+    f"Depth:   {Z:.3f} m\n"
 )
 
 plt.figure()

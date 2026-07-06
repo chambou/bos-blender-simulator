@@ -56,8 +56,8 @@ def predict_eps_phase(L, d, n, n0):
 # CONFIGURATION
 # ------------------------------
 
-# input_folder = Path("outputs/render_results")
-input_folder = Path("outputs/experiments")
+input_folder = Path("outputs/render_results")
+# input_folder = Path("outputs/experiments")
 output_folder = Path("outputs/processing_results")
 reference_mode = "first"   # options: "median", "first", "previous"
 save_fits_cube = False       # save full cube as FITS file - takes time!
