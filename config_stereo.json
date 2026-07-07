@@ -24,15 +24,17 @@
       "object_distance": 0.5,
       "object_scale": 0.5,
   
+      "solidify": 1,
+      "thickness": 0.002,
       "turbulence": 1,
       "turbulence_number": 1,
       "turbulence_path": [
-        "data/turbulence_screen7.tiff",
+        "data/turbulence_screen_flat.tiff",
         "data/turbulence_screen7.tiff"
       ],
   
       "turbulence_distance": [
-        0.8,
+        0.7,
         0.8
       ],
   
@@ -61,8 +63,9 @@
       "render_path": "outputs/render_results/",
       "active_cameras": "all"
     },
+
     "refractive_index": [
       1.1,
-      1
+      1.1
     ]
   }

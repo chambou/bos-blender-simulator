@@ -141,7 +141,7 @@ for k in range(0,Ncams):
     eps_x = u / S_px
     eps_y = v / S_px
 
-    # phase: pixel-integrated -> meters
+    # phase: pixel-integrated -> meters technically the optical path difference (OPD)
     phase = (phase / S_px) * psi_screen
 
     np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase)

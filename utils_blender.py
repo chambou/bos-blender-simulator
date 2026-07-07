@@ -117,7 +117,7 @@ def add_image_material(obj, image_path):
 
     obj.data.materials.append(mat)
 
-def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_path, refractive_index):
+def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_path, refractive_index, thickness):
 
     # =========================
     # PARAMETERS
@@ -169,8 +169,21 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
 
 
     # =========================
+    # SOLIDIFY
+    # =========================
+    if config["distortions"]["solidify"] == 1:
+        solidify = obj.modifiers.new("solidify", "SOLIDIFY")
+        solidify.thickness = thickness
+        solidify.offset = 0.0       # distributes thickness evenly around the surface
+        solidify.use_even_offset = True
+    else:
+        pass
+
+    # =========================
     # MATERIAL (ONLY VISUALIZATION)
     # =========================
+
+
     mat = bpy.data.materials.new(name="TurbuPhaseScreen")
     mat.use_nodes = True
     mat.blend_method = 'BLEND'
@@ -181,6 +194,7 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
 
     bsdf = nodes.new(type="ShaderNodeBsdfRefraction")
     bsdf.inputs["IOR"].default_value = refractive_index
+    bsdf.inputs["Roughness"].default_value = 0.0  # sharp, undiffused bend
 
     output = nodes.new(type="ShaderNodeOutputMaterial")
 

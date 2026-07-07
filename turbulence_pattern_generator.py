@@ -52,6 +52,18 @@ def field(size=200):
 
     return f.astype(np.float32)
 
+def gaussian_field(size=200, sigma=0.15, amplitude=1.0, center=(0.0, 0.0)):
+    x = np.linspace(-0.5, 0.5, size).reshape(-1, 1)
+    y = np.linspace(-0.5, 0.5, size).reshape(1, -1)
+
+    cx, cy = center
+    r2 = (x - cx)**2 + (y - cy)**2
+
+    f = amplitude * np.exp(-r2 / (2 * sigma**2))
+
+    f -= f.mean()
+    f /= np.max(np.abs(f))
+    return f.astype(np.float32)
 
 # --------------------------------------------------
 # Generate a synthetic turbulence-like phase screen

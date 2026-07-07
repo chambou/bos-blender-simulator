@@ -7,6 +7,8 @@ from scipy.optimize import linear_sum_assignment
 from pathlib import Path
 import glob, os
 from scipy import signal, datasets, ndimage
+import time
+
 
 # ------------------------------
 # CONFIGURATION
@@ -305,6 +307,23 @@ extrema_L = suppress_nearby_extrema(extrema_candidates_L, img_left, min_distance
 # plt.tight_layout()
 # plt.show(block=False)
 
+H, W = 1080, 1920
+pL = cam0
+pR = cam1
+
+t0 = time.time()
+C = np.zeros(2*W - 1)
+for y in range(H):
+    C += signal.correlate(pL[y], pR[y], mode='full', method='fft')
+C /= H
+print(f"Elapsed: {time.time() - t0:.2f} s")
+edge = W//2
+C = C[edge:-edge]
+plt.figure()
+plt.plot(C)
+plt.xlim
+plt.show(block=False)
+
 # --- 1-dimentional correlation ---
 center = (img_left.shape[1]//2)
 kernel_width = img_left.shape[1]
@@ -351,7 +370,7 @@ Z_exp = (f_px_exp * B_exp) / disp
 
 
 #print("depth with 8 bit image: ", (f_px * B) / disp_8bit)
-print("depth with original image: ", (f_px * B) / disp)
+print("depth with original image 445: ", (f_px * B) / 537)
 print("depth with original image (from fftconvolve): ", (f_px * B) / disp_fft)
 # print("depth with original image: ", (f_px_exp * B_exp) / disp)
 # print("depth with original image (from fftconvolve): ", (f_px_exp * B_exp) / disp_fft)
@@ -372,13 +391,13 @@ im0 = ax0.imshow(cam0, cmap='viridis')
 ax0.set_title('Left image')
 ax0.set_xlim(0, img_left.shape[1]); ax0.set_ylim(img_left.shape[0], 0)
 cbar0 = plt.colorbar(im0, ax=ax0)
-cbar0.set_label('Intensity (m)', rotation=270, labelpad=15)
+cbar0.set_label('(m)', rotation=270, labelpad=15)
 
 im1 = ax1.imshow(cam1, cmap='viridis')
 ax1.set_title('Right image')
 ax1.set_xlim(0, img_right.shape[1]); ax1.set_ylim(img_right.shape[0], 0)
 cbar0 = plt.colorbar(im1, ax=ax1)
-cbar0.set_label('Intensity (m)', rotation=270, labelpad=15)
+cbar0.set_label('(m)', rotation=270, labelpad=15)
 
 plt.tight_layout()
 plt.show(block=False)
