@@ -8,6 +8,7 @@ import tifffile as tiff
 from scipy.fft import fft2, ifft2
 from pathlib import Path
 import json
+from scipy.fft import dctn, idctn
 
 def reconstruct_from_gradient(gx, gy):
     """
@@ -56,8 +57,15 @@ def predict_eps_phase(L, d, n, n0):
 # CONFIGURATION
 # ------------------------------
 
-input_folder = Path("outputs/render_results")
-# input_folder = Path("outputs/experiments")
+# specify if blender is used
+blender_used = True
+
+if blender_used:
+    print("Using Blender setup")
+    input_folder = Path("outputs/render_results")
+else:
+    print("Using experimental setup")
+    input_folder = Path("outputs/experiments")
 output_folder = Path("outputs/processing_results")
 reference_mode = "first"   # options: "median", "first", "previous"
 save_fits_cube = False       # save full cube as FITS file - takes time!
@@ -116,35 +124,63 @@ for k in range(0,Ncams):
         pyr_scale=0.5, levels=10, winsize=15,
         iterations=3, poly_n=5, poly_sigma=1.2, flags=0
     )
-    
+
+    # flow = cv2.calcOpticalFlowFarneback(
+    # frames[0,...], frames[1,...], None,
+    # pyr_scale=0.5, 
+    # levels=3,                            # Lower: to preserve small details
+    # winsize=5,                           # Lower: to catch smaller shifts
+    # iterations=7,                        # Increased: help resolve fast jumps
+    # poly_n=5,
+    # poly_sigma=1.2,
+    # flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN # Upgraded: Better mathematical precision for edges
+    # )
+
     u, v = flow[..., 0], flow[..., 1] # Displacement in X and Y direction
 
     phase = reconstruct_from_gradient(u, v)
 
 
     # conversion to physical units
-    config_path = "config_stereo.json"
-    with open(config_path, "r") as f:
-        config = json.load(f)
-    f_mm = config["camera"]["focal_length"]
-    sensor_mm = config["camera"]["sensor_size"]
-    z_A = config["distortions"]["turbulence_distance"][0]
-    z_B = config["BOS"]["distance_camera_screen"]
-    z_D = z_B - z_A
+    if blender_used:
+        config_path = "config_stereo.json"
+        with open(config_path, "r") as f:
+            config = json.load(f)
+        f_mm = config["camera"]["focal_length"]
+        sensor_mm = config["camera"]["sensor_size"]
+        z_A = config["distortions"]["turbulence_distance"][0]
+        z_B = config["BOS"]["distance_camera_screen"]
+        z_D = z_B - z_A
 
-    f_m  = f_mm * 1e-3                                # focal length in metres
-    f_px = f_mm / sensor_mm * 1290                    # focal length in pixels
-    S_px = f_px * z_D / (z_D + z_A - f_m)             # exact gain [px/rad]
-    psi_screen = z_A / f_px                           # screen sampling [m/px]
+        f_m  = f_mm * 1e-3                                # focal length in metres
+        f_px = f_mm / sensor_mm * 1290                    # focal length in pixels
+
+    else:
+        # Configuration of the experimental setup
+        B = 0.06        # 6 cm
+        f_mm = 3.13             # camera specification
+        sensor_mm = 3.84        # camera specification
+        W_px = 1280     # width resolution
+        z_A = 0.3
+        z_B = 0.57
+        z_D = z_B - z_A
+
+        f_m = f_mm * 1e-3                                # focal length in metres
+        f_px = (f_mm / sensor_mm) * W_px
+
+    
+    S_px = f_px * z_D / (z_D + z_A - f_m)             # [px/rad]
+    psi_screen = z_A / f_px                           # [m/px]
 
     # deflection: pixels -> radians
     eps_x = u / S_px
     eps_y = v / S_px
 
-    # phase: pixel-integrated -> meters technically the optical path difference (OPD)
-    phase = (phase / S_px) * psi_screen
+    # phase: pixel-integrated -> meters, technically the optical path difference (OPD)
+    opd = (phase / S_px) * psi_screen
 
     np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_opd.npy'),opd)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp.npy'),eps_x)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp.npy'),eps_y)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp_px.npy'),u)

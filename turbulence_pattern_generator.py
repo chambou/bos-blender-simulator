@@ -68,8 +68,8 @@ def gaussian_field(size=200, sigma=0.15, amplitude=1.0, center=(0.0, 0.0)):
 # --------------------------------------------------
 # Generate a synthetic turbulence-like phase screen
 # --------------------------------------------------
-f = field()
-
+# f = field()
+f = gaussian_field()
 # Remove residual offset
 f -= np.mean(f)
 
@@ -82,7 +82,7 @@ f *= 0.5
 # --------------------------------------------------
 # Save as 32-bit floating-point TIFF
 # --------------------------------------------------
-output_file = "data/turbulence_screen7.tiff"
+output_file = "data/turbulence_screen_gaussian.tiff"
 
 tiff.imwrite(output_file, f.astype(np.float32))
 np.save(output_file[:-5] + ".npy",f)

@@ -230,12 +230,18 @@ def masking(img, threshold_frac=0.1, min_region_size=500):
 
 #     return magnitude
 
+# specify if blender is used
+blender_used = True
 
 # Load phase arrays
 cam0 = np.load(os.path.join(input_folder,'cam0_phase.npy'))
 cam1 = np.load(os.path.join(input_folder,'cam1_phase.npy'))
 img_left  = to_image(cam0)
 img_right = to_image(cam1)
+
+# load opd
+opd0 = np.load(os.path.join(input_folder,'cam0_opd.npy'))
+opd1 = np.load(os.path.join(input_folder,'cam1_opd.npy'))
 
 # # Very rough: crop 100 pixels from each side (whatever your empty region width is)
 # crop = 500
@@ -307,22 +313,22 @@ extrema_L = suppress_nearby_extrema(extrema_candidates_L, img_left, min_distance
 # plt.tight_layout()
 # plt.show(block=False)
 
-H, W = 1080, 1920
-pL = cam0
-pR = cam1
+# H, W = 1080, 1920
+# pL = cam0
+# pR = cam1
 
-t0 = time.time()
-C = np.zeros(2*W - 1)
-for y in range(H):
-    C += signal.correlate(pL[y], pR[y], mode='full', method='fft')
-C /= H
-print(f"Elapsed: {time.time() - t0:.2f} s")
-edge = W//2
-C = C[edge:-edge]
-plt.figure()
-plt.plot(C)
-plt.xlim
-plt.show(block=False)
+# t0 = time.time()
+# C = np.zeros(2*W - 1)
+# for y in range(H):
+#     C += signal.correlate(pL[y], pR[y], mode='full', method='fft')
+# C /= H
+# print(f"Elapsed: {time.time() - t0:.2f} s")
+# edge = W//2
+# C = C[edge:-edge]
+# plt.figure()
+# plt.plot(C)
+# plt.xlim
+# plt.show(block=False)
 
 # --- 1-dimentional correlation ---
 center = (img_left.shape[1]//2)
@@ -343,34 +349,34 @@ corr_2d, (best_y,best_x) = correlation_2d(cam0, cam1, center, kernel_shape)
 #disp_8bit = center - best_x_R_8bit
 disp = center - best_x_R
 disp_fft = center - best_x
-print(f"disparity from fftconvolve: {disp_fft}px\n")
-
+print(f"disparity from 1d correlation: {disp}px")
+print(f"disparity from fftconvolve: {disp_fft}px")
 
 # --- Compute depth for each match ---
 config_path = "config_stereo.json"
 with open(config_path, "r") as f:
     config = json.load(f)
 
-B = config["BOS"]["cameras_spacing"]
-f_mm = config["camera"]["focal_length"]
-sensor_mm = config["camera"]["sensor_size"]
-W_px = config["camera"]["resolution_x"]
+if blender_used:
+    print("Using Blender setup")
+    B = config["BOS"]["cameras_spacing"]
+    f_mm = config["camera"]["focal_length"]
+    sensor_mm = config["camera"]["sensor_size"]
+    W_px = config["camera"]["resolution_x"]
+
+else:
+    print("Using experimental setup")
+    # Configuration of the experimental setup
+    B = 0.06                # 6 cm
+    f_mm = 3.13             # camera specification
+    sensor_mm = 3.84        # camera specification
+    W_px = 1280             # width resolution
 
 f_px = (f_mm / sensor_mm) * W_px
 Z = (f_px * B) / disp
 
-# Configuration of the experimental setup
-B_exp = 0.06        # 6 cm
-f_mm_exp = 2.8      # computed from HFOV and sensor dimensions
-sensor_mm_exp = 3.4 # camera specification
-W_px_exp = 1280     # width resolution
-
-f_px_exp = (f_mm_exp / sensor_mm_exp) * W_px_exp
-Z_exp = (f_px_exp * B_exp) / disp
-
-
 #print("depth with 8 bit image: ", (f_px * B) / disp_8bit)
-print("depth with original image 445: ", (f_px * B) / 537)
+print("depth with original image new: ", (f_px * B) / 125)
 print("depth with original image (from fftconvolve): ", (f_px * B) / disp_fft)
 # print("depth with original image: ", (f_px_exp * B_exp) / disp)
 # print("depth with original image (from fftconvolve): ", (f_px_exp * B_exp) / disp_fft)
@@ -387,13 +393,13 @@ print("depth with original image (from fftconvolve): ", (f_px * B) / disp_fft)
 # --- visualize ---
 
 fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
-im0 = ax0.imshow(cam0, cmap='viridis')
+im0 = ax0.imshow(opd0, cmap='viridis')
 ax0.set_title('Left image')
 ax0.set_xlim(0, img_left.shape[1]); ax0.set_ylim(img_left.shape[0], 0)
 cbar0 = plt.colorbar(im0, ax=ax0)
 cbar0.set_label('(m)', rotation=270, labelpad=15)
 
-im1 = ax1.imshow(cam1, cmap='viridis')
+im1 = ax1.imshow(opd1, cmap='viridis')
 ax1.set_title('Right image')
 ax1.set_xlim(0, img_right.shape[1]); ax1.set_ylim(img_right.shape[0], 0)
 cbar0 = plt.colorbar(im1, ax=ax1)
