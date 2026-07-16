@@ -1,6 +1,8 @@
 import cv2
 from pathlib import Path
 import glob, os
+import numpy as np
+import time
 
 # # Open the default camera
 # cam = cv2.VideoCapture(0)
@@ -46,12 +48,17 @@ cv2.namedWindow("test")
 
 img_counter = 0
 
+previous_frame = np.zeros((800, 2560))
+
 while True:
     ret, frame = cam.read()
     if not ret:
         print("failed to grab frame")
         break
     cv2.imshow("test", frame)
+
+    frame_diff = frame[:,:,0] - previous_frame
+    cv2.imshow("difference", frame_diff)
 
     k = cv2.waitKey(1)
     if k%256 == 27:
@@ -65,6 +72,7 @@ while True:
         split_cam(frame, output_folder, setup_mode)
         # print("{} written!".format(img_name))
         img_counter += 1
+    previous_frame = frame[:,:,0]
 
 cam.release()
 

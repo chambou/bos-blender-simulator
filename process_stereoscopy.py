@@ -373,6 +373,8 @@ else:
     W_px = 1280             # width resolution
 
 f_px = (f_mm / sensor_mm) * W_px
+if disp == 0:
+    disp = 1e-9
 Z = (f_px * B) / disp
 
 #print("depth with 8 bit image: ", (f_px * B) / disp_8bit)

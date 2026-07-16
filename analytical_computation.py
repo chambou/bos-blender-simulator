@@ -91,7 +91,7 @@ phase_pred_px = S_px * phase_pred
 
 # eps_x, eps_y, phase = eps_phase(L_glass, N, z_D, n, n0, thickness, exact=True)
 # opd1 = flat_screen_opd_explicit(L_glass, 512, z_A, z_D, 1.1, 1, 0.002)
-opd1 = solidified_opd(L_glass, 512, z_A, z_D, 1.1, 1, 0.002)
+opd1 = solidified_opd(L_glass, 512, z_A, z_D, 1.5, 1, 0.018)
 plt.figure()
 plt.imshow(opd1)
 cbar0 = plt.colorbar()

@@ -126,14 +126,14 @@ for k in range(0,Ncams):
     )
 
     # flow = cv2.calcOpticalFlowFarneback(
-    # frames[0,...], frames[1,...], None,
-    # pyr_scale=0.5, 
-    # levels=3,                            # Lower: to preserve small details
-    # winsize=5,                           # Lower: to catch smaller shifts
-    # iterations=7,                        # Increased: help resolve fast jumps
-    # poly_n=5,
-    # poly_sigma=1.2,
-    # flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN # Upgraded: Better mathematical precision for edges
+    #     frames[0,...], frames[1,...], None,
+    #     pyr_scale=0.5, 
+    #     levels=3,                            # Lower: to preserve small details
+    #     winsize=5,                           # Lower: to catch smaller shifts
+    #     iterations=7,                        # Increased: help resolve fast jumps
+    #     poly_n=5,
+    #     poly_sigma=1.2,
+    #     flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN # Upgraded: Better mathematical precision for edges
     # )
 
     u, v = flow[..., 0], flow[..., 1] # Displacement in X and Y direction

@@ -176,6 +176,10 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
         solidify.thickness = thickness
         solidify.offset = 0.0       # distributes thickness evenly around the surface
         solidify.use_even_offset = True
+        solidify.solidify_mode = 'NON_MANIFOLD'
+        solidify.nonmanifold_thickness_mode = 'FIXED'
+        solidify.nonmanifold_boundary_mode = 'NONE'
+        # solidify.nonmanifold_thickness_mode = 'FIXED'
     else:
         pass
 
