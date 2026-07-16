@@ -134,6 +134,7 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
 
     bm = bmesh.new()
     bmesh.ops.create_grid(bm, x_segments=SUBDIV, y_segments=SUBDIV, size=1.0)
+    bmesh.ops.reverse_faces(bm, faces=bm.faces[:])
     bm.to_mesh(mesh)
     bm.free()
 
@@ -190,7 +191,7 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
 
     mat = bpy.data.materials.new(name="TurbuPhaseScreen")
     mat.use_nodes = True
-    mat.blend_method = 'BLEND'
+    mat.blend_method = 'OPAQUE' # was 'BLEND'
 
     nodes = mat.node_tree.nodes
     links = mat.node_tree.links

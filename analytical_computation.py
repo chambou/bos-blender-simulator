@@ -32,7 +32,11 @@ def predict_eps_phase(L, d, n, n0):
     return eps_x, eps_y, phase
 
 def solidified_opd(L, N, z_A, z_D, n, n0, thickness):
+    half_thick = thickness / 2
+    z_A = z_A - half_thick
+    z_D = z_D - half_thick
     z_B = z_A + z_D
+    # print(z_B)
     x = np.linspace(-L/2, L/2, N)
     X, Y = np.meshgrid(x, x)
     r = np.hypot(X, Y)

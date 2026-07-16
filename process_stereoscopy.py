@@ -231,7 +231,7 @@ def masking(img, threshold_frac=0.1, min_region_size=500):
 #     return magnitude
 
 # specify if blender is used
-blender_used = True
+blender_used = False
 
 # Load phase arrays
 cam0 = np.load(os.path.join(input_folder,'cam0_phase.npy'))
@@ -239,9 +239,14 @@ cam1 = np.load(os.path.join(input_folder,'cam1_phase.npy'))
 img_left  = to_image(cam0)
 img_right = to_image(cam1)
 
+print(cam0.shape)
+
 # load opd
 opd0 = np.load(os.path.join(input_folder,'cam0_opd.npy'))
 opd1 = np.load(os.path.join(input_folder,'cam1_opd.npy'))
+
+# opd0 = to_image(opd0)
+# opd1 = to_image(opd1)
 
 # # Very rough: crop 100 pixels from each side (whatever your empty region width is)
 # crop = 500
@@ -344,7 +349,7 @@ corr_2d, (best_y,best_x) = correlation_2d(cam0, cam1, center, kernel_shape)
 # kernel_width1 = pL_cropped.shape[1]
 # ax_1, corr_1d1, best = correlation_1d(pL_cropped, pR_cropped, center1, kernel_width1)
 
-
+print(center, best_x_R, best_x)
 
 #disp_8bit = center - best_x_R_8bit
 disp = center - best_x_R

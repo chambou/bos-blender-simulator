@@ -58,14 +58,15 @@ def predict_eps_phase(L, d, n, n0):
 # ------------------------------
 
 # specify if blender is used
-blender_used = True
+blender_used = False
 
 if blender_used:
     print("Using Blender setup")
     input_folder = Path("outputs/render_results")
 else:
     print("Using experimental setup")
-    input_folder = Path("outputs/experiments")
+    # input_folder = Path("outputs/experiments")
+    input_folder = Path("../experimental/16072026/level_3/img")
 output_folder = Path("outputs/processing_results")
 reference_mode = "first"   # options: "median", "first", "previous"
 save_fits_cube = False       # save full cube as FITS file - takes time!
@@ -92,16 +93,27 @@ for k in range(0,Ncams):
     # LOAD FITS IMAGE
     # ------------------------------
     def load_image(path):
-        data = cv2.imread(path)
-        # Normalize to 0–255 and convert to uint8 for optical flow
-        norm = (data - np.nanmin(data)) / (np.nanmax(data) - np.nanmin(data))
-        return (255 * norm).astype(np.uint8)
+        # data = cv2.imread(path)
+        # # Normalize to 0–255 and convert to uint8 for optical flow
+        # norm = (data - np.nanmin(data)) / (np.nanmax(data) - np.nanmin(data))
+        # print(norm.shape)
+        # return (255 * norm).astype(np.uint8)
+
+        # # float32
+        data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+        data = data.astype(np.float32)
+        print(data.shape)
+        denom = np.nanmax(data) - np.nanmin(data)
+        normalized_f32 = 2 * (data - np.nanmin(data)) / (denom if denom != 0 else 1.0) - 1.0
+        return data
 
     # ------------------------------
     # LOAD ALL FRAMES
     # ------------------------------
     frames = [load_image(f) for f in files]
-    frames = np.array(frames)[...,0]
+    # frames = np.array(frames)[...,0]
+    frames = np.array(frames)[...]
+    print(frames.shape)
     #frames[frames > 10] = 255
     #frames[frames != 255] = 0
     mask = np.ones_like(frames[0])  # mask for dome
@@ -119,12 +131,13 @@ for k in range(0,Ncams):
         raise ValueError("Invalid reference_mode. Use 'median', 'first', or 'previous'.")
 
     # Compute optical flow
-    flow = cv2.calcOpticalFlowFarneback(
-        frames[0,...],frames[1,...], None,
-        pyr_scale=0.5, levels=10, winsize=15,
-        iterations=3, poly_n=5, poly_sigma=1.2, flags=0
-    )
+    # flow = cv2.calcOpticalFlowFarneback(
+    #     frames[0,...],frames[1,...], None,
+    #     pyr_scale=0.5, levels=10, winsize=15,
+    #     iterations=3, poly_n=5, poly_sigma=1.2, flags=0
+    # )
 
+    # new_flow
     # flow = cv2.calcOpticalFlowFarneback(
     #     frames[0,...], frames[1,...], None,
     #     pyr_scale=0.5, 
@@ -135,6 +148,18 @@ for k in range(0,Ncams):
     #     poly_sigma=1.2,
     #     flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN # Upgraded: Better mathematical precision for edges
     # )
+
+    # new_flow1
+    flow = cv2.calcOpticalFlowFarneback(
+        frames[0,...], frames[1,...], None,
+        pyr_scale=0.5, 
+        levels=5,                            # Lower: to preserve small details
+        winsize=5,                           # Lower: to catch smaller shifts
+        iterations=7,                        # Increased: help resolve fast jumps
+        poly_n=5,
+        poly_sigma=1.2,
+        flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN # Upgraded: Better mathematical precision for edges
+    )
 
     u, v = flow[..., 0], flow[..., 1] # Displacement in X and Y direction
 

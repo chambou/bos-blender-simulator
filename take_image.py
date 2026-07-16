@@ -58,7 +58,7 @@ while True:
     cv2.imshow("test", frame)
 
     frame_diff = frame[:,:,0] - previous_frame
-    cv2.imshow("difference", frame_diff)
+    cv2.imshow("difference", np.abs(frame_diff))
 
     k = cv2.waitKey(1)
     if k%256 == 27:
