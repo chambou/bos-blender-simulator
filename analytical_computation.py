@@ -47,7 +47,7 @@ def solidified_opd(L, N, z_A, z_D, n, n0, thickness):
     OPL_ref = n0 * L_ref
 
     # actual path length
-    theta_0 = np.arctan(r / z_B)
+    theta_0 = np.arctan(r / (z_B))
     theta_1 = np.arcsin((n0/n) * np.sin(theta_0))
     L_13 = z_B/np.cos(theta_0)
     L_2 = thickness/np.cos(theta_1)

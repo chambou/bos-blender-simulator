@@ -134,7 +134,7 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
 
     bm = bmesh.new()
     bmesh.ops.create_grid(bm, x_segments=SUBDIV, y_segments=SUBDIV, size=1.0)
-    bmesh.ops.reverse_faces(bm, faces=bm.faces[:])
+    # bmesh.ops.reverse_faces(bm, faces=bm.faces[:])
     bm.to_mesh(mesh)
     bm.free()
 
@@ -177,12 +177,22 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
         solidify.thickness = thickness
         solidify.offset = 0.0       # distributes thickness evenly around the surface
         solidify.use_even_offset = True
-        solidify.solidify_mode = 'NON_MANIFOLD'
+        solidify.solidify_mode = 'EXTRUDE'
         solidify.nonmanifold_thickness_mode = 'FIXED'
         solidify.nonmanifold_boundary_mode = 'NONE'
         # solidify.nonmanifold_thickness_mode = 'FIXED'
     else:
         pass
+
+    # # =========================
+    # # FIX NORMAL ORIENTATION (NEW — placed here, after rotation is set)
+    # # =========================
+    # bpy.context.view_layer.objects.active = obj
+    # obj.select_set(True)
+    # bpy.ops.object.mode_set(mode='EDIT')
+    # bpy.ops.mesh.select_all(action='SELECT')
+    # bpy.ops.mesh.flip_normals()
+    # bpy.ops.object.mode_set(mode='OBJECT')
 
     # =========================
     # MATERIAL (ONLY VISUALIZATION)
@@ -206,5 +216,7 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
     links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
 
     obj.data.materials.append(mat)
+    # for mod in obj.modifiers:
+    #     print(mod.name, mod.type, "show_viewport:", mod.show_viewport, "show_in_editmode:", mod.show_in_editmode)
 
     return obj

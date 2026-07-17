@@ -4,17 +4,27 @@ import glob, os
 import numpy as np
 import time
 
-# # Open the default camera
-# cam = cv2.VideoCapture(0)
-
-# # Get the default frame width and height
-# frame_width = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
-# frame_height = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
 def split_cam(frame, path, mode):
     center = frame.shape[1]//2
     img_L = frame[:,:center,0]
     img_R = frame[:,center:,0]
+    
+    # Convert to float32 and normalize
+    def convert_to_32(frame):
+        # return cv2.normalize(
+        #     frame.astype(np.float32), 
+        #     None, 
+        #     alpha=0.0, 
+        #     beta=1.0, 
+        #     norm_type=cv2.NORM_MINMAX, 
+        #     dtype=cv2.CV_32F
+        # )
+        return (frame.astype(np.float32) / 255.0)
+
+    img_L = convert_to_32(img_L)
+    img_R = convert_to_32(img_R)
+    print(img_L.shape)
+    print(img_L.dtype)
 
     if mode == "ref":
         L_name = "exp_ref_0deg_0.tif"
@@ -34,7 +44,13 @@ output_folder = Path("outputs/experiments")
 
 # --- Specify mode ---
 setup_mode = "ref"
-# setup_mode = "with_phase"
+setup_mode = "with_phase"
+
+if setup_mode == 'ref':
+    print("Getting reference image...")
+else:
+
+    print("Getting turbulence image...")
 # --------------------
 
 # Open the default camera
@@ -48,7 +64,7 @@ cv2.namedWindow("test")
 
 img_counter = 0
 
-previous_frame = np.zeros((800, 2560))
+previous_frame = None
 
 while True:
     ret, frame = cam.read()
@@ -57,8 +73,16 @@ while True:
         break
     cv2.imshow("test", frame)
 
-    frame_diff = frame[:,:,0] - previous_frame
-    cv2.imshow("difference", np.abs(frame_diff))
+    current_gray = frame[:, :, 0].copy()
+
+    if previous_frame is not None:
+        diff_signed = current_gray.astype(np.int16) - previous_frame.astype(np.int16)
+
+        # Convert to a displayable image: centre zero at mid-gray (128),
+        # so both positive and negative differences are visible
+        diff_display = np.clip(diff_signed + 128, 0, 255).astype(np.uint8)
+
+        cv2.imshow("difference", diff_display)
 
     k = cv2.waitKey(1)
     if k%256 == 27:
@@ -72,7 +96,8 @@ while True:
         split_cam(frame, output_folder, setup_mode)
         # print("{} written!".format(img_name))
         img_counter += 1
-    previous_frame = frame[:,:,0]
+    
+    previous_frame = current_gray
 
 cam.release()
 

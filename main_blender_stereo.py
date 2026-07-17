@@ -155,7 +155,7 @@ if config["distortions"]["turbulence"] == 1:
         if k == 1:
             height = height*2
             width = height
-        create_turbu_screen(vector_middle_camera, pos, width, height,config["distortions"]["turbulence_path"][k], IOR, thickness)
+        obj = create_turbu_screen(vector_middle_camera, pos, width, height,config["distortions"]["turbulence_path"][k], IOR, thickness)
 
 
 #######################################

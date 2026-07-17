@@ -65,8 +65,8 @@ if blender_used:
     input_folder = Path("outputs/render_results")
 else:
     print("Using experimental setup")
-    # input_folder = Path("outputs/experiments")
-    input_folder = Path("../experimental/16072026/level_3/img")
+    input_folder = Path("outputs/experiments")
+    # input_folder = Path("../experimental/16072026/level_3/img")
 output_folder = Path("outputs/processing_results")
 reference_mode = "first"   # options: "median", "first", "previous"
 save_fits_cube = False       # save full cube as FITS file - takes time!
@@ -101,18 +101,25 @@ for k in range(0,Ncams):
 
         # # float32
         data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-        data = data.astype(np.float32)
-        print(data.shape)
-        denom = np.nanmax(data) - np.nanmin(data)
-        normalized_f32 = 2 * (data - np.nanmin(data)) / (denom if denom != 0 else 1.0) - 1.0
+        if blender_used == True:
+            data = data.astype(np.float32) / 65535.0        # because blender outputs 16-bit images
+        else:
+            data = data.astype(np.float32)
+        print(data.dtype, data.min(), data.max(), data.shape)
+        # denom = np.nanmax(data) - np.nanmin(data)
+        # data = 2 * (data - np.nanmin(data)) / (denom if denom != 0 else 1.0) - 1.0
+        # plt.imshow(data)
+        # plt.show()
         return data
 
     # ------------------------------
     # LOAD ALL FRAMES
     # ------------------------------
     frames = [load_image(f) for f in files]
-    # frames = np.array(frames)[...,0]
-    frames = np.array(frames)[...]
+    if blender_used == True:
+        frames = np.array(frames)[...,0]
+    else:
+        frames = np.array(frames)[...]          # if already one channel
     print(frames.shape)
     #frames[frames > 10] = 255
     #frames[frames != 255] = 0
@@ -131,11 +138,11 @@ for k in range(0,Ncams):
         raise ValueError("Invalid reference_mode. Use 'median', 'first', or 'previous'.")
 
     # Compute optical flow
-    # flow = cv2.calcOpticalFlowFarneback(
-    #     frames[0,...],frames[1,...], None,
-    #     pyr_scale=0.5, levels=10, winsize=15,
-    #     iterations=3, poly_n=5, poly_sigma=1.2, flags=0
-    # )
+    flow = cv2.calcOpticalFlowFarneback(
+        frames[0,...],frames[1,...], None,
+        pyr_scale=0.5, levels=10, winsize=15,
+        iterations=3, poly_n=5, poly_sigma=1.2, flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN
+    )
 
     # new_flow
     # flow = cv2.calcOpticalFlowFarneback(
@@ -150,16 +157,32 @@ for k in range(0,Ncams):
     # )
 
     # new_flow1
-    flow = cv2.calcOpticalFlowFarneback(
-        frames[0,...], frames[1,...], None,
-        pyr_scale=0.5, 
-        levels=5,                            # Lower: to preserve small details
-        winsize=5,                           # Lower: to catch smaller shifts
-        iterations=7,                        # Increased: help resolve fast jumps
-        poly_n=5,
-        poly_sigma=1.2,
-        flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN # Upgraded: Better mathematical precision for edges
-    )
+    # flow = cv2.calcOpticalFlowFarneback(
+    #     frames[0,...], frames[1,...], None,
+    #     pyr_scale=0.5, 
+    #     levels=5,                            # Lower: to preserve small details
+    #     winsize=5,                           # Lower: to catch smaller shifts
+    #     iterations=7,                        # Increased: help resolve fast jumps
+    #     poly_n=5,
+    #     poly_sigma=1.2,
+    #     flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN # Upgraded: Better mathematical precision for edges
+    # )
+
+    # new_flow2 - most sensitive
+    # Apply a tiny, sub-pixel blur to smooth out sensor jitter
+    frame1 = cv2.GaussianBlur(frames[0,...], (3, 3), 0.5)       # smoothen to avoid noise
+    frame2 = cv2.GaussianBlur(frames[1,...], (3, 3), 0.5)
+    # flow = cv2.calcOpticalFlowFarneback(
+    #     frame1, frame2, None,
+    #     # frames[0,...], frames[1,...], None,
+    #     pyr_scale=0.5,
+    #     levels=1,
+    #     winsize=3,                                  # or 5
+    #     iterations=10,
+    #     poly_n=5,
+    #     poly_sigma=1.1,
+    #     flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN
+    # )
 
     u, v = flow[..., 0], flow[..., 1] # Displacement in X and Y direction
 
