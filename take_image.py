@@ -11,18 +11,10 @@ def split_cam(frame, path, mode):
     
     # Convert to float32 and normalize
     def convert_to_32(frame):
-        # return cv2.normalize(
-        #     frame.astype(np.float32), 
-        #     None, 
-        #     alpha=0.0, 
-        #     beta=1.0, 
-        #     norm_type=cv2.NORM_MINMAX, 
-        #     dtype=cv2.CV_32F
-        # )
         return (frame.astype(np.float32) / 255.0)
 
-    img_L = convert_to_32(img_L)
-    img_R = convert_to_32(img_R)
+    # img_L = convert_to_32(img_L)
+    # img_R = convert_to_32(img_R)
     print(img_L.shape)
     print(img_L.dtype)
 
@@ -44,13 +36,15 @@ output_folder = Path("outputs/experiments")
 
 # --- Specify mode ---
 setup_mode = "ref"
-setup_mode = "with_phase"
+# setup_mode = "with_phase"
+
+modes = ["ref", "non-ref"]
 
 if setup_mode == 'ref':
-    print("Getting reference image...")
+    print("Reference image mode...")
 else:
 
-    print("Getting turbulence image...")
+    print("Turbulence image mode...")
 # --------------------
 
 # Open the default camera

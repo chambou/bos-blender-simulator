@@ -15,12 +15,12 @@ import numpy as np
 # plt.show()
 
 
-array = np.load('outputs/processing_results/cam0_phase.npy')
+# array = np.load('outputs/processing_results/cam0_phase.npy')
 
-plt.figure()
-plt.imshow(array)
-plt.colorbar()
-plt.show(block=False)
+# plt.figure()
+# plt.imshow(array)
+# plt.colorbar()
+# plt.show(block=False)
 
 array = np.load('outputs/processing_results/cam0_xdisp.npy')
 
@@ -38,12 +38,12 @@ cbar0 = plt.colorbar()
 cbar0.set_label('(rad)', rotation=270, labelpad=15)
 plt.show(block=False)
 
-array = np.load('outputs/processing_results/cam1_phase.npy')
+# array = np.load('outputs/processing_results/cam1_phase.npy')
 
-plt.figure()
-plt.imshow(array)
-plt.colorbar()
-plt.show(block=False)
+# plt.figure()
+# plt.imshow(array)
+# plt.colorbar()
+# plt.show(block=False)
 
 array = np.load('outputs/processing_results/cam1_xdisp.npy')
 

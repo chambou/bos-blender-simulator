@@ -3,12 +3,12 @@ import random
 import math
 from pathlib import Path
 
-output_file = Path("data") / "bos_pattern.png"
+output_file = Path("data") / "bos_pattern1.png"
 
 # Parameters
 width, height = 1920,1080
 radius = 1                  # size of the dots
-density = 0.4              # proportion of the surface with dots
+density = 0.6              # proportion of the surface with dots
 
 # Total surface
 image_area = width * height

@@ -65,8 +65,8 @@ if blender_used:
     input_folder = Path("outputs/render_results")
 else:
     print("Using experimental setup")
-    input_folder = Path("outputs/experiments")
-    # input_folder = Path("../experimental/16072026/level_3/img")
+    # input_folder = Path("outputs/experiments")
+    input_folder = Path("../experimental/17072026/plastic/level_2/img")
 output_folder = Path("outputs/processing_results")
 reference_mode = "first"   # options: "median", "first", "previous"
 save_fits_cube = False       # save full cube as FITS file - takes time!
@@ -93,23 +93,37 @@ for k in range(0,Ncams):
     # LOAD FITS IMAGE
     # ------------------------------
     def load_image(path):
-        # data = cv2.imread(path)
-        # # Normalize to 0–255 and convert to uint8 for optical flow
-        # norm = (data - np.nanmin(data)) / (np.nanmax(data) - np.nanmin(data))
-        # print(norm.shape)
-        # return (255 * norm).astype(np.uint8)
+        data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+        data = data.astype(np.float32)   # already saved as float32 in [0,1], no rescaling needed
+        # Convert to uint8 using a FIXED scale, identical for every image
+        data = (255 * np.clip(data, 0.0, 1.0)).astype(np.uint8)
+        print(data.dtype, data.min(), data.max(), data.shape)
+
+
 
         # # float32
-        data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-        if blender_used == True:
-            data = data.astype(np.float32) / 65535.0        # because blender outputs 16-bit images
-        else:
-            data = data.astype(np.float32)
-        print(data.dtype, data.min(), data.max(), data.shape)
+        # data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+        # if blender_used == True:
+        #     data = data.astype(np.float32) / 65535.0        # because blender outputs 16-bit images
+        # else:
+        #     data = data.astype(np.float32)
+        # print(data.dtype, data.min(), data.max(), data.shape)
         # denom = np.nanmax(data) - np.nanmin(data)
         # data = 2 * (data - np.nanmin(data)) / (denom if denom != 0 else 1.0) - 1.0
         # plt.imshow(data)
         # plt.show()
+        # return data
+        # Path A: float32 direct
+        data_f32 = cv2.imread(path, cv2.IMREAD_UNCHANGED).astype(np.float32)
+
+        # Path B: your fixed uint8 conversion
+        data_u8 = (255 * np.clip(data_f32, 0.0, 1.0)).astype(np.uint8)
+        data_u8_as_float = data_u8.astype(np.float32) / 255.0
+
+        diff = data_f32 - data_u8_as_float
+        print("Max abs difference:", np.abs(diff).max())
+        print("Mean abs difference:", np.abs(diff).mean())
+
         return data
 
     # ------------------------------
@@ -117,7 +131,7 @@ for k in range(0,Ncams):
     # ------------------------------
     frames = [load_image(f) for f in files]
     if blender_used == True:
-        frames = np.array(frames)[...,0]
+        frames = np.array(frames)[...,0]        # because blender render is not single channel
     else:
         frames = np.array(frames)[...]          # if already one channel
     print(frames.shape)
@@ -138,11 +152,11 @@ for k in range(0,Ncams):
         raise ValueError("Invalid reference_mode. Use 'median', 'first', or 'previous'.")
 
     # Compute optical flow
-    flow = cv2.calcOpticalFlowFarneback(
-        frames[0,...],frames[1,...], None,
-        pyr_scale=0.5, levels=10, winsize=15,
-        iterations=3, poly_n=5, poly_sigma=1.2, flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN
-    )
+    # flow = cv2.calcOpticalFlowFarneback(
+    #     frames[0,...],frames[1,...], None,
+    #     pyr_scale=0.5, levels=10, winsize=15,
+    #     iterations=3, poly_n=5, poly_sigma=1.2, flags=0
+    # )
 
     # new_flow
     # flow = cv2.calcOpticalFlowFarneback(
@@ -172,19 +186,20 @@ for k in range(0,Ncams):
     # Apply a tiny, sub-pixel blur to smooth out sensor jitter
     frame1 = cv2.GaussianBlur(frames[0,...], (3, 3), 0.5)       # smoothen to avoid noise
     frame2 = cv2.GaussianBlur(frames[1,...], (3, 3), 0.5)
-    # flow = cv2.calcOpticalFlowFarneback(
-    #     frame1, frame2, None,
-    #     # frames[0,...], frames[1,...], None,
-    #     pyr_scale=0.5,
-    #     levels=1,
-    #     winsize=3,                                  # or 5
-    #     iterations=10,
-    #     poly_n=5,
-    #     poly_sigma=1.1,
-    #     flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN
-    # )
+    flow = cv2.calcOpticalFlowFarneback(
+        # frame1, frame2, None,
+        frames[0,...], frames[1,...], None,
+        pyr_scale=0.5,
+        levels=1,
+        winsize=3,                                  # or 5
+        iterations=10,
+        poly_n=5,
+        poly_sigma=1.3,
+        flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN
+    )
 
     u, v = flow[..., 0], flow[..., 1] # Displacement in X and Y direction
+    print(type(u))
 
     phase = reconstruct_from_gradient(u, v)
 

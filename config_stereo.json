@@ -29,7 +29,7 @@
       "turbulence": 1,
       "turbulence_number": 1,
       "turbulence_path": [
-        "data/turbulence_screen_gaussian.tiff",
+        "data/turbulence_screen_flat.tiff",
         "data/turbulence_screen_gaussian.tiff"
       ],
   
@@ -58,7 +58,7 @@
     },
   
     "render": {
-      "activate_render": 1,
+      "activate_render": 0,
       "format": "TIFF",
       "render_path": "outputs/render_results/",
       "active_cameras": "all"
