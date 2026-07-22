@@ -22,44 +22,44 @@ import numpy as np
 # plt.colorbar()
 # plt.show(block=False)
 
-array = np.load('outputs/processing_results/cam0_xdisp.npy')
-
-plt.figure()
-plt.imshow(array)
-cbar0 = plt.colorbar()
-cbar0.set_label('(rad)', rotation=270, labelpad=15)
-plt.show(block=False)
-
-array = np.load('outputs/processing_results/cam0_ydisp.npy')
-
-plt.figure()
-plt.imshow(array)
-cbar0 = plt.colorbar()
-cbar0.set_label('(rad)', rotation=270, labelpad=15)
-plt.show(block=False)
-
-# array = np.load('outputs/processing_results/cam1_phase.npy')
+# array = np.load('outputs/processing_results/cam0_xdisp.npy')
 
 # plt.figure()
 # plt.imshow(array)
-# plt.colorbar()
+# cbar0 = plt.colorbar()
+# cbar0.set_label('(rad)', rotation=270, labelpad=15)
 # plt.show(block=False)
 
-array = np.load('outputs/processing_results/cam1_xdisp.npy')
+# array = np.load('outputs/processing_results/cam0_ydisp.npy')
 
-plt.figure()
-plt.imshow(array)
-cbar0 = plt.colorbar()
-cbar0.set_label('(rad)', rotation=270, labelpad=15)
-plt.show(block=False)
+# plt.figure()
+# plt.imshow(array)
+# cbar0 = plt.colorbar()
+# cbar0.set_label('(rad)', rotation=270, labelpad=15)
+# plt.show(block=False)
 
-array = np.load('outputs/processing_results/cam1_ydisp.npy')
+# # array = np.load('outputs/processing_results/cam1_phase.npy')
 
-plt.figure()
-plt.imshow(array)
-cbar0 = plt.colorbar()
-cbar0.set_label('(rad)', rotation=270, labelpad=15)
-plt.show()
+# # plt.figure()
+# # plt.imshow(array)
+# # plt.colorbar()
+# # plt.show(block=False)
+
+# array = np.load('outputs/processing_results/cam1_xdisp.npy')
+
+# plt.figure()
+# plt.imshow(array)
+# cbar0 = plt.colorbar()
+# cbar0.set_label('(rad)', rotation=270, labelpad=15)
+# plt.show(block=False)
+
+# array = np.load('outputs/processing_results/cam1_ydisp.npy')
+
+# plt.figure()
+# plt.imshow(array)
+# cbar0 = plt.colorbar()
+# cbar0.set_label('(rad)', rotation=270, labelpad=15)
+# plt.show()
 
 # array = np.load('outputs/processing_results/glass_prediction/analytical_phase.npy')
 
@@ -172,3 +172,26 @@ plt.show()
 # cbar0 = plt.colorbar(im1, ax=ax1)
 # cbar0.set_label('Intensity (m)', rotation=270, labelpad=15)
 # plt.show()
+
+array0x = np.load('outputs/processing_results/cam0_xdisp_m.npy')
+array0y = np.load('outputs/processing_results/cam0_ydisp_m.npy')
+
+array1x = np.load('outputs/processing_results/cam1_xdisp_m.npy')
+array1y = np.load('outputs/processing_results/cam1_ydisp_m.npy')
+
+magnitude0 = np.sqrt(array0x**2 + array0y**2)
+magnitude1 = np.sqrt(array1x**2 + array1y**2)
+
+plt.figure(figsize=(8, 6))
+# plt.imshow(magnitude, cmap='hot')
+plt.imshow(magnitude0,vmax=0.5, cmap='hot')
+plt.colorbar(label='magnitude')
+plt.title('Optical Flow Magnitude')
+plt.show(block=False)
+
+plt.figure(figsize=(8, 6))
+# plt.imshow(magnitude1, cmap='hot')
+plt.imshow(magnitude1,vmax=1e-8, cmap='hot')
+plt.colorbar(label='magnitude')
+plt.title('Optical Flow Magnitude')
+plt.show()

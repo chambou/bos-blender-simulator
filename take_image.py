@@ -13,8 +13,8 @@ def split_cam(frame, path, mode):
     def convert_to_32(frame):
         return (frame.astype(np.float32) / 255.0)
 
-    # img_L = convert_to_32(img_L)
-    # img_R = convert_to_32(img_R)
+    img_L = convert_to_32(img_L)
+    img_R = convert_to_32(img_R)
     print(img_L.shape)
     print(img_L.dtype)
 
@@ -36,7 +36,7 @@ output_folder = Path("outputs/experiments")
 
 # --- Specify mode ---
 setup_mode = "ref"
-# setup_mode = "with_phase"
+setup_mode = "with_phase"
 
 modes = ["ref", "non-ref"]
 
