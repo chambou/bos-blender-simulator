@@ -258,25 +258,29 @@ for k in range(0,Ncams):
     # eps_x = u / S
     # eps_y = v / S
 
-    delta_x1 = eps_x * S
-    delta_y1 = eps_y * S
-
     # displacement in the sensor [m]
     delta_x = u * psi_screen
     delta_y = v * psi_screen
+    displacement_mag = np.sqrt(u**2 + v**2) * psi_screen
 
-    diff =  delta_x - delta_x1
-    print("Max abs difference:", np.abs(diff).max())
-    print("Mean abs difference:", np.abs(diff).mean())
+    # displacement in the BOS pattern [m]
+    delta_x_background = z_D * np.tan(eps_x)
+    delta_y_background = z_D * np.tan(eps_y)
+    background_disp_mag = np.sqrt(delta_x_background**2 + delta_y_background**2)
+
 
     # phase: pixel-integrated -> meters, technically the optical path difference (OPD)
     opd = (phase / S_px) * psi_screen
 
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_phase.npy'),phase)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_opd.npy'),opd)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_xdeflection.npy'),eps_x)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_ydeflection.npy'),eps_y)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp_px.npy'),u)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp_px.npy'),v)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_xdisp_m.npy'),delta_x)
-    np.save(os.path.join(output_folder,'cam'+str(k)+'_ydisp_m.npy'),delta_y)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_phase_radpx.npy'),phase)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_opd_m.npy'),opd)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_xdeflection_rad.npy'),eps_x)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_ydeflection_rad.npy'),eps_y)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_sensor_xdisp_px.npy'),u)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_sensor_ydisp_px.npy'),v)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_sensor_xdisp_m.npy'),delta_x)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_sensor_ydisp_m.npy'),delta_y)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_sensor_disp_mag_m.npy'),displacement_mag)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_background_xdisp_m.npy'),delta_x_background)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_background_ydisp_m.npy'),delta_y_background)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_background_disp_mag_m.npy'),background_disp_mag)
