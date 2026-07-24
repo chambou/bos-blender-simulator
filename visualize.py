@@ -15,28 +15,30 @@ import numpy as np
 # plt.show()
 
 
-# array = np.load('outputs/processing_results/cam0_phase.npy')
+array = np.load('outputs/processing_results/cam0_opd_m.npy')
 
-# plt.figure()
-# plt.imshow(array)
-# plt.colorbar()
-# plt.show(block=False)
+plt.figure()
+plt.imshow(array)
+plt.title('OPD')
+cbar0 = plt.colorbar()
+cbar0.set_label('(m)', rotation=270, labelpad=15)
+plt.show(block=False)
 
-# array = np.load('outputs/processing_results/cam0_xdisp.npy')
-
-# plt.figure()
-# plt.imshow(array)
-# cbar0 = plt.colorbar()
-# cbar0.set_label('(rad)', rotation=270, labelpad=15)
-# plt.show(block=False)
-
-# array = np.load('outputs/processing_results/cam0_ydisp.npy')
+# array = np.load('outputs/processing_results/cam0_sensor_xdisp_m.npy')
 
 # plt.figure()
 # plt.imshow(array)
 # cbar0 = plt.colorbar()
-# cbar0.set_label('(rad)', rotation=270, labelpad=15)
+# cbar0.set_label('(m)', rotation=270, labelpad=15)
 # plt.show(block=False)
+
+# array = np.load('outputs/processing_results/cam0_sensor_xdisp_m.npy')
+
+# plt.figure()
+# plt.imshow(array)
+# cbar0 = plt.colorbar()
+# cbar0.set_label('(m)', rotation=270, labelpad=15)
+# plt.show()
 
 # # array = np.load('outputs/processing_results/cam1_phase.npy')
 
@@ -173,46 +175,111 @@ import numpy as np
 # cbar0.set_label('Intensity (m)', rotation=270, labelpad=15)
 # plt.show()
 
-## ------------- Sensor displacement [m] -----------------
+# ## ------------- Deflection [rad] -----------------
+
+# array_left = np.load('outputs/processing_results/cam0_deflection_mag_rad.npy')
+# array_right = np.load('outputs/processing_results/cam1_deflection_mag_rad.npy')
+
+# fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
+# fig.suptitle(('Deflection'))
+# im0 = ax0.imshow(array_left,vmax=1e-7, cmap='hot')
+# ax0.set_title('Left image')
+# ax0.set_xlim(0, array_left.shape[1]); ax0.set_ylim(array_left.shape[0], 0)
+# cbar0 = plt.colorbar(im0, ax=ax0)
+# cbar0.set_label('Magnitude (rad)', rotation=270, labelpad=15)
+
+# im1 = ax1.imshow(array_right,vmax=1e-7, cmap='hot')
+# ax1.set_title('Right image')
+# ax1.set_xlim(0, array_right.shape[1]); ax1.set_ylim(array_right.shape[0], 0)
+# cbar0 = plt.colorbar(im1, ax=ax1)
+# cbar0.set_label('Magnitude (rad)', rotation=270, labelpad=15)
+# plt.tight_layout()
+# plt.show(block=False)
+
+# ## ------------- Sensor displacement [m] -----------------
+
+# array_left = np.load('outputs/processing_results/cam0_sensor_disp_mag_m.npy')
+# array_right = np.load('outputs/processing_results/cam1_sensor_disp_mag_m.npy')
+# print(type(array_left))
+
+# fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
+# fig.suptitle(('Displacement in the Sensor'))
+# im0 = ax0.imshow(array_left,vmax=3e-8, cmap='hot')
+# ax0.set_title('Left image')
+# ax0.set_xlim(0, array_left.shape[1]); ax0.set_ylim(array_left.shape[0], 0)
+# cbar0 = plt.colorbar(im0, ax=ax0)
+# cbar0.set_label('Magnitude (m)', rotation=270, labelpad=15)
+
+# im1 = ax1.imshow(array_right,vmax=3e-8, cmap='hot')
+# ax1.set_title('Right image')
+# ax1.set_xlim(0, array_right.shape[1]); ax1.set_ylim(array_right.shape[0], 0)
+# cbar0 = plt.colorbar(im1, ax=ax1)
+# cbar0.set_label('Magnitude (m)', rotation=270, labelpad=15)
+# plt.tight_layout()
+# plt.show(block=False)
+
+# ## ------------- Background displacement [m] -----------------
+
+# array_left = np.load('outputs/processing_results/cam0_background_disp_mag_m.npy')
+# array_right = np.load('outputs/processing_results/cam1_background_disp_mag_m.npy')
+
+# fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
+# fig.suptitle(('Displacement in the Background'))
+# im0 = ax0.imshow(array_left,vmax=1e-7, cmap='hot')
+# ax0.set_title('Left image')
+# ax0.set_xlim(0, array_left.shape[1]); ax0.set_ylim(array_left.shape[0], 0)
+# cbar0 = plt.colorbar(im0, ax=ax0)
+# cbar0.set_label('Magnitude (m)', rotation=270, labelpad=15)
+
+# im1 = ax1.imshow(array_right,vmax=1e-7, cmap='hot')
+# ax1.set_title('Right image')
+# ax1.set_xlim(0, array_right.shape[1]); ax1.set_ylim(array_right.shape[0], 0)
+# cbar0 = plt.colorbar(im1, ax=ax1)
+# cbar0.set_label('Magnitude (m)', rotation=270, labelpad=15)
+# plt.tight_layout()
+# plt.show()
+
+
+# # array0x = np.load('outputs/processing_results/cam0_xdisp_m.npy')
+# # array0y = np.load('outputs/processing_results/cam0_ydisp_m.npy')
+
+# # array1x = np.load('outputs/processing_results/cam1_xdisp_m.npy')
+# # array1y = np.load('outputs/processing_results/cam1_ydisp_m.npy')
+
+# # magnitude0 = np.sqrt(array0x**2 + array0y**2)
+# # magnitude1 = np.sqrt(array1x**2 + array1y**2)
+
+# # plt.figure(figsize=(8, 6))
+# # # plt.imshow(magnitude, cmap='hot')
+# # plt.imshow(magnitude0,vmax=0.5, cmap='hot')
+# # plt.colorbar(label='magnitude')
+# # plt.title('Optical Flow Magnitude')
+# # plt.show(block=False)
+
+# # plt.figure(figsize=(8, 6))
+# # # plt.imshow(magnitude1, cmap='hot')
+# # plt.imshow(magnitude1,vmax=1e-8, cmap='hot')
+# # plt.colorbar(label='magnitude')
+# # plt.title('Optical Flow Magnitude')
+# # plt.show()
+
 
 array_left = np.load('outputs/processing_results/cam0_sensor_disp_mag_m.npy')
-array_right = np.load('outputs/processing_results/cam1_sensor_disp_mag_m.npy')
+array_right = np.load('outputs/processing_results/cam0_deflection_mag_rad.npy')
+print(type(array_left))
 
 fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
-fig.suptitle(('Sensor Displacement'))
-im0 = ax0.imshow(array_left,vmax=5e-8, cmap='hot')
-ax0.set_title('Left image')
+# fig.suptitle(('Displacement in the Sensor'))
+im0 = ax0.imshow(array_left, cmap='hot')
+ax0.set_title('Displacement in the Sensor')
 ax0.set_xlim(0, array_left.shape[1]); ax0.set_ylim(array_left.shape[0], 0)
 cbar0 = plt.colorbar(im0, ax=ax0)
 cbar0.set_label('Magnitude (m)', rotation=270, labelpad=15)
 
-im1 = ax1.imshow(array_right,vmax=5e-8, cmap='hot')
-ax1.set_title('Right image')
+im1 = ax1.imshow(array_right, cmap='hot')
+ax1.set_title('Angular Deflection')
 ax1.set_xlim(0, array_right.shape[1]); ax1.set_ylim(array_right.shape[0], 0)
 cbar0 = plt.colorbar(im1, ax=ax1)
-cbar0.set_label('Magnitude (m)', rotation=270, labelpad=15)
+cbar0.set_label('Magnitude (rad)', rotation=270, labelpad=15)
 plt.tight_layout()
 plt.show()
-
-# array0x = np.load('outputs/processing_results/cam0_xdisp_m.npy')
-# array0y = np.load('outputs/processing_results/cam0_ydisp_m.npy')
-
-# array1x = np.load('outputs/processing_results/cam1_xdisp_m.npy')
-# array1y = np.load('outputs/processing_results/cam1_ydisp_m.npy')
-
-# magnitude0 = np.sqrt(array0x**2 + array0y**2)
-# magnitude1 = np.sqrt(array1x**2 + array1y**2)
-
-# plt.figure(figsize=(8, 6))
-# # plt.imshow(magnitude, cmap='hot')
-# plt.imshow(magnitude0,vmax=0.5, cmap='hot')
-# plt.colorbar(label='magnitude')
-# plt.title('Optical Flow Magnitude')
-# plt.show(block=False)
-
-# plt.figure(figsize=(8, 6))
-# # plt.imshow(magnitude1, cmap='hot')
-# plt.imshow(magnitude1,vmax=1e-8, cmap='hot')
-# plt.colorbar(label='magnitude')
-# plt.title('Optical Flow Magnitude')
-# plt.show()

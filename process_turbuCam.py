@@ -65,8 +65,9 @@ if blender_used:
     input_folder = Path("outputs/render_results")
 else:
     print("Using experimental setup")
-    input_folder = Path("outputs/experiments")
-    # input_folder = Path("../experimental/21072026/dryer/screen_pattern/img")
+    # input_folder = Path("outputs/experiments")
+    # input_folder = Path("outputs/render_results")
+    input_folder = Path("../experimental/23072026/hamamatsu/turb/img")
 output_folder = Path("outputs/processing_results")
 reference_mode = "first"   # options: "median", "first", "previous"
 save_fits_cube = False       # save full cube as FITS file - takes time!
@@ -95,9 +96,19 @@ for k in range(0,Ncams):
     def load_image(path):
         if blender_used == False:
             data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+            print(data.dtype, data.min(), data.max(), data.shape)
+            # data = cv2.normalize(data, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            vmin = 112
+            vmax = 6302
+            data = np.clip((data.astype(np.float32) - vmin) / (vmax - vmin), 0, 1)
+            data = (data * 255).astype(np.uint8)
             # data = data * 255.0
         else:
-            data = (data.astype(np.float32) / 65535.0 * 255.0).astype(np.uint8)
+            data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+            print(data.dtype, data.min(), data.max(), data.shape)
+            # data = ((data.astype(np.float32) / 65535.0) * 255.0).astype(np.uint8)
+            # data = (data // 256).astype(np.uint8)
+            data = cv2.normalize(data, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
         # data = data.astype(np.float32)   # already saved as float32 in [0,1], no rescaling needed
         # # Convert to uint8 using a FIXED scale, identical for every image
         # data = (255 * np.clip(data, 0.0, 1.0)).astype(np.uint8)
@@ -135,7 +146,8 @@ for k in range(0,Ncams):
     # ------------------------------
     frames = [load_image(f) for f in files]
     if blender_used == True:
-        frames = np.array(frames)[...,0]        # because blender render is not single channel
+        # frames = np.array(frames)[...,0]        # because blender render is not single channel
+        frames = np.array(frames)[...]        # because blender render is not single channel
     else:
         frames = np.array(frames)[...]          # if already one channel
     print(frames.shape)
@@ -227,41 +239,50 @@ for k in range(0,Ncams):
         sensor_mm = config["camera"]["sensor_size"]
         z_A = config["distortions"]["turbulence_distance"][0]
         z_B = config["BOS"]["distance_camera_screen"]
-        z_D = z_B - z_A
 
         f_m  = f_mm * 1e-3                                # focal length in metres
-        f_px = f_mm / sensor_mm * 1290                    # focal length in pixels
+        f_px = f_mm * (1920 / sensor_mm)                    # focal length in pixels
 
     else:
         # Configuration of the experimental setup
-        B = 0.06        # 6 cm
-        f_mm = 3.13             # camera specification
-        sensor_mm = 3.84        # camera specification
-        W_px = 1280     # width resolution
-        z_A = 0.3
-        z_B = 0.9       # 0.6 usually
+        # B = 0.06        # 6 cm
+        # f_mm = 3.13             # camera specification
+        # sensor_mm = 3.84        # camera specification
+        # W_px = 1280     # width resolution
+        # z_A = 0.3
+        # z_B = 0.83       # 0.6 usually
+        # z_D = z_B - z_A
+
+        # hamamatsu
+        f_mm = 40
+        sensor_mm = 13.312
+        z_A = 0.5
+        z_B = 1.45
         z_D = z_B - z_A
+        W_px = 2048
 
         f_m = f_mm * 1e-3                                # focal length in metres
-        f_px = (f_mm / sensor_mm) * W_px
+        f_px = (f_mm / sensor_mm) * W_px                # focal length in pixels
 
     
     S_px = f_px * z_D / (z_D + z_A - f_m)             # [px/rad]
-    psi_screen = z_A / f_px                           # [m/px]
+    psi_screen = z_A / f_px
+    pitch = (6.5*1e-6)                           # [m/px] footprint of a single pixel in the field of view at z_A
 
     S = f_m * z_D / (z_D + z_A - f_m)                 # Sensitivity
 
     # deflection: pixels -> radians
     eps_x = u / S_px
     eps_y = v / S_px
+    deflection_mag = np.sqrt(u**2 + v**2) / S_px
 
     # eps_x = u / S
     # eps_y = v / S
 
     # displacement in the sensor [m]
-    delta_x = u * psi_screen
-    delta_y = v * psi_screen
-    displacement_mag = np.sqrt(u**2 + v**2) * psi_screen
+    delta_x = u * pitch
+    delta_y = v * pitch
+    displacement_mag = np.sqrt(u**2 + v**2) * pitch
 
     # displacement in the BOS pattern [m]
     delta_x_background = z_D * np.tan(eps_x)
@@ -272,10 +293,15 @@ for k in range(0,Ncams):
     # phase: pixel-integrated -> meters, technically the optical path difference (OPD)
     opd = (phase / S_px) * psi_screen
 
+    # phase: estimate using arbitrary wavelength [rad]
+    lambda_0 = 532e-9
+    phase1 = (2*np.pi / lambda_0) * opd
+
     np.save(os.path.join(output_folder,'cam'+str(k)+'_phase_radpx.npy'),phase)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_opd_m.npy'),opd)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_xdeflection_rad.npy'),eps_x)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_ydeflection_rad.npy'),eps_y)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_deflection_mag_rad.npy'),deflection_mag)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_sensor_xdisp_px.npy'),u)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_sensor_ydisp_px.npy'),v)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_sensor_xdisp_m.npy'),delta_x)

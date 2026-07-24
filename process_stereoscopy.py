@@ -234,16 +234,16 @@ def masking(img, threshold_frac=0.1, min_region_size=500):
 blender_used = False
 
 # Load phase arrays
-cam0 = np.load(os.path.join(input_folder,'cam0_phase.npy'))
-cam1 = np.load(os.path.join(input_folder,'cam1_phase.npy'))
+cam0 = np.load(os.path.join(input_folder,'cam0_phase_radpx.npy'))
+cam1 = np.load(os.path.join(input_folder,'cam1_phase_radpx.npy'))
 img_left  = to_image(cam0)
 img_right = to_image(cam1)
 
 print(cam0.shape)
 
 # load opd
-opd0 = np.load(os.path.join(input_folder,'cam0_opd.npy'))
-opd1 = np.load(os.path.join(input_folder,'cam1_opd.npy'))
+opd0 = np.load(os.path.join(input_folder,'cam0_opd_m.npy'))
+opd1 = np.load(os.path.join(input_folder,'cam1_opd_m.npy'))
 
 # opd0 = to_image(opd0)
 # opd1 = to_image(opd1)
@@ -383,7 +383,7 @@ if disp == 0:
 Z = (f_px * B) / disp
 
 #print("depth with 8 bit image: ", (f_px * B) / disp_8bit)
-print("depth with original image new: ", (f_px * B) / 125)
+print("depth with original image new: ", (f_px * B) / disp)
 print("depth with original image (from fftconvolve): ", (f_px * B) / disp_fft)
 # print("depth with original image: ", (f_px_exp * B_exp) / disp)
 # print("depth with original image (from fftconvolve): ", (f_px_exp * B_exp) / disp_fft)
