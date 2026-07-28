@@ -263,10 +263,13 @@ plt.show(block=False)
 # # plt.title('Optical Flow Magnitude')
 # # plt.show()
 
+num = 1
 
-array_left = np.load('outputs/processing_results/cam0_sensor_disp_mag_m.npy')
-array_right = np.load('outputs/processing_results/cam0_deflection_mag_rad.npy')
+array_left = np.load(f'outputs/processing_results/cam{num}_sensor_disp_mag_m.npy')
+array_right = np.load(f'outputs/processing_results/cam{num}_deflection_mag_rad.npy')
 print(type(array_left))
+print(array_left.max())
+print(array_right.max())
 
 fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
 # fig.suptitle(('Displacement in the Sensor'))

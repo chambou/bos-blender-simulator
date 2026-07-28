@@ -373,7 +373,7 @@ else:
     print("Using experimental setup")
     # Configuration of the experimental setup
     B = 0.06                # 6 cm
-    f_mm = 3.13             # camera specification
+    f_mm = 40             # camera specification
     sensor_mm = 3.84        # camera specification
     W_px = 1280             # width resolution
 
@@ -381,9 +381,10 @@ f_px = (f_mm / sensor_mm) * W_px
 if disp == 0:
     disp = 1e-9
 Z = (f_px * B) / disp
+alpha = 9.4397e-3             # rad
 
 #print("depth with 8 bit image: ", (f_px * B) / disp_8bit)
-print("depth with original image new: ", (f_px * B) / disp)
+print("depth with original image new: ", (f_px * B) / (disp + (2 * f_px * alpha)))
 print("depth with original image (from fftconvolve): ", (f_px * B) / disp_fft)
 # print("depth with original image: ", (f_px_exp * B_exp) / disp)
 # print("depth with original image (from fftconvolve): ", (f_px_exp * B_exp) / disp_fft)

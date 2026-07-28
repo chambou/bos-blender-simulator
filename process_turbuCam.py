@@ -65,9 +65,9 @@ if blender_used:
     input_folder = Path("outputs/render_results")
 else:
     print("Using experimental setup")
-    # input_folder = Path("outputs/experiments")
+    input_folder = Path("outputs/experiments")
     # input_folder = Path("outputs/render_results")
-    input_folder = Path("../experimental/23072026/hamamatsu/turb/img")
+    # input_folder = Path("../experimental/23072026/hamamatsu/turb/img")
 output_folder = Path("outputs/processing_results")
 reference_mode = "first"   # options: "median", "first", "previous"
 save_fits_cube = False       # save full cube as FITS file - takes time!
@@ -98,9 +98,9 @@ for k in range(0,Ncams):
             data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
             print(data.dtype, data.min(), data.max(), data.shape)
             # data = cv2.normalize(data, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-            vmin = 112
-            vmax = 6302
-            data = np.clip((data.astype(np.float32) - vmin) / (vmax - vmin), 0, 1)
+            # vmin = 112
+            # vmax = 6302
+            # data = np.clip((data.astype(np.float32) - vmin) / (vmax - vmin), 0, 1)
             data = (data * 255).astype(np.uint8)
             # data = data * 255.0
         else:
@@ -168,11 +168,11 @@ for k in range(0,Ncams):
         raise ValueError("Invalid reference_mode. Use 'median', 'first', or 'previous'.")
 
     # Compute optical flow
-    # flow = cv2.calcOpticalFlowFarneback(
-    #     frames[0,...],frames[1,...], None,
-    #     pyr_scale=0.5, levels=10, winsize=15,
-    #     iterations=3, poly_n=5, poly_sigma=1.2, flags=0
-    # )
+    flow = cv2.calcOpticalFlowFarneback(
+        frames[0,...],frames[1,...], None,
+        pyr_scale=0.5, levels=10, winsize=15,
+        iterations=3, poly_n=5, poly_sigma=1.2, flags=0
+    )
 
     # new_flow
     # flow = cv2.calcOpticalFlowFarneback(
@@ -202,17 +202,17 @@ for k in range(0,Ncams):
     # Apply a tiny, sub-pixel blur to smooth out sensor jitter
     frame1 = cv2.GaussianBlur(frames[0,...], (3, 3), 0.5)       # smoothen to avoid noise
     frame2 = cv2.GaussianBlur(frames[1,...], (3, 3), 0.5)
-    flow = cv2.calcOpticalFlowFarneback(
-        frame1, frame2, None,
-        # frames[0,...], frames[1,...], None,
-        pyr_scale=0.5,
-        levels=1,
-        winsize=3,                                  # or 5
-        iterations=20,
-        poly_n=5,
-        poly_sigma=1.1,
-        flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN
-    )
+    # flow = cv2.calcOpticalFlowFarneback(
+    #     frame1, frame2, None,
+    #     # frames[0,...], frames[1,...], None,
+    #     pyr_scale=0.5,
+    #     levels=1,
+    #     winsize=3,                                  # or 5
+    #     iterations=20,
+    #     poly_n=5,
+    #     poly_sigma=1.1,
+    #     flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN
+    # )
 
     u, v = flow[..., 0], flow[..., 1] # Displacement in X and Y direction
     print(type(u))
@@ -245,44 +245,47 @@ for k in range(0,Ncams):
 
     else:
         # Configuration of the experimental setup
-        # B = 0.06        # 6 cm
-        # f_mm = 3.13             # camera specification
-        # sensor_mm = 3.84        # camera specification
-        # W_px = 1280     # width resolution
-        # z_A = 0.3
-        # z_B = 0.83       # 0.6 usually
-        # z_D = z_B - z_A
+        B = 0.06        # 6 cm
+        f_mm = 40             # camera specification
+        sensor_mm = 3.84        # camera specification
+        W_px = 1280     # width resolution
+        z_A = 1.04
+        z_B = 1.50       # 0.6 usually
+        z_D = z_B - z_A
 
         # hamamatsu
-        f_mm = 40
-        sensor_mm = 13.312
-        z_A = 0.5
-        z_B = 1.45
-        z_D = z_B - z_A
-        W_px = 2048
+        # f_mm = 40
+        # sensor_mm = 13.312
+        # z_A = 0.5
+        # z_B = 1.45
+        # z_D = z_B - z_A
+        # W_px = 2048
 
         f_m = f_mm * 1e-3                                # focal length in metres
         f_px = (f_mm / sensor_mm) * W_px                # focal length in pixels
 
     
     S_px = f_px * z_D / (z_D + z_A - f_m)             # [px/rad]
-    psi_screen = z_A / f_px
-    pitch = (6.5*1e-6)                           # [m/px] footprint of a single pixel in the field of view at z_A
+    psi_screen = z_A / f_px                             # [m/px] footprint of a single pixel in the field of view at z_A
+    pitch = (sensor_mm / W_px) * 1e-3
 
-    S = f_m * z_D / (z_D + z_A - f_m)                 # Sensitivity
-
-    # deflection: pixels -> radians
-    eps_x = u / S_px
-    eps_y = v / S_px
-    deflection_mag = np.sqrt(u**2 + v**2) / S_px
-
-    # eps_x = u / S
-    # eps_y = v / S
+    S_m = f_m * z_D / (z_D + z_A - f_m)                 # Sensitivity
 
     # displacement in the sensor [m]
     delta_x = u * pitch
     delta_y = v * pitch
     displacement_mag = np.sqrt(u**2 + v**2) * pitch
+
+    # deflection: pixels -> radians
+    # eps_x = u / S_px
+    # eps_y = v / S_px
+    # deflection_mag = np.sqrt(u**2 + v**2) / S_px
+    eps_x = delta_x / S_m
+    eps_y = delta_y / S_m
+    deflection_mag = np.sqrt(delta_x**2 + delta_y**2) / S_m
+
+    # eps_x = u / S
+    # eps_y = v / S
 
     # displacement in the BOS pattern [m]
     delta_x_background = z_D * np.tan(eps_x)
@@ -291,11 +294,15 @@ for k in range(0,Ncams):
 
 
     # phase: pixel-integrated -> meters, technically the optical path difference (OPD)
-    opd = (phase / S_px) * psi_screen
+    # opd = (phase / S_px) * psi_screen
+    # opd = (phase / S_px)
+    opd = reconstruct_from_gradient(eps_x,eps_y)
 
     # phase: estimate using arbitrary wavelength [rad]
     lambda_0 = 532e-9
     phase1 = (2*np.pi / lambda_0) * opd
+
+
 
     np.save(os.path.join(output_folder,'cam'+str(k)+'_phase_radpx.npy'),phase)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_opd_m.npy'),opd)
