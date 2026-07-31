@@ -1,20 +1,20 @@
 {
     "BOS": {
-      "cameras_number": 2,
+      "cameras_number": 1,
       "cameras_spacing": 0.1,
       "cameras_toe_in_angle": 0,
       "screen_pattern_width": 0.8,
       "screen_pattern_height": 0.6,
       "screen_pattern_file": "data/bos_pattern.png",
-      "distance_camera_screen": 1,
+      "distance_camera_screen": 1.45,
       "height": 0.2
     },
   
     "camera": {
-      "sensor_size": 5.6,
-      "resolution_x": 1920,
-      "resolution_y": 1080,
-      "focal_length": 10,
+      "sensor_size": 13.312,
+      "resolution_x": 2048,
+      "resolution_y": 2048,
+      "focal_length": 40,
       "bit_depth": "16"
     },
   
@@ -58,14 +58,14 @@
     },
   
     "render": {
-      "activate_render": 0,
+      "activate_render": 1,
       "format": "TIFF",
       "render_path": "outputs/render_results/",
       "active_cameras": "all"
     },
 
     "refractive_index": [
-      1.1,
+      0.99994,
       1.1
     ]
   }

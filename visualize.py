@@ -1,3 +1,5 @@
+# Script to visualize evrything (comment and uncomment by choice)
+
 from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
@@ -263,13 +265,14 @@ plt.show(block=False)
 # # plt.title('Optical Flow Magnitude')
 # # plt.show()
 
-num = 1
+num = 0
 
 array_left = np.load(f'outputs/processing_results/cam{num}_sensor_disp_mag_m.npy')
 array_right = np.load(f'outputs/processing_results/cam{num}_deflection_mag_rad.npy')
 print(type(array_left))
-print(array_left.max())
-print(array_right.max())
+print(array_left.max() * 1e6)
+print(array_right.max() * 1e3)
+print(array.min())
 
 fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 6))
 # fig.suptitle(('Displacement in the Sensor'))

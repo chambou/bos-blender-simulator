@@ -58,6 +58,8 @@ scene.render.engine = 'CYCLES'
 scene.cycles.device = 'GPU'
 scene.unit_settings.system = 'METRIC'
 scene.unit_settings.scale_length = 1.0
+scene.render.resolution_x = config["camera"]["resolution_x"]
+scene.render.resolution_y = config["camera"]["resolution_y"]
 
 # Clean
 for obj in list(bpy.data.objects):
@@ -92,12 +94,22 @@ for i, pos in enumerate(camera_positions):
     cam = bpy.context.object
     cam.data.lens = config["camera"]["focal_length"]
     cam.data.sensor_width = config["camera"]["sensor_size"]
-    cam.data.sensor_fit = 'HORIZONTAL'
+    cam.data.sensor_height = config["camera"]["sensor_size"]
+    if config["camera"]["resolution_x"] == config["camera"]["resolution_y"]:
+        cam.data.sensor_fit = 'AUTO'
+    else:
+        cam.data.sensor_fit = 'HORIZONTAL'
     cam.data.display_size = 0.2
     look_at(cam, mathutils.Vector((pos+np.array([0, 1, 0])).tolist()))
     cam.rotation_euler.rotate_axis('Y',np.sign(pos[0])*np.radians(toe_in_angle))
     cam.name = f"Cam_{i}"
     cams.append(cam)
+    print("sensor_width:", cam.data.sensor_width)
+    print("sensor_height:", cam.data.sensor_height)
+    print("sensor_fit:", cam.data.sensor_fit)
+    print("lens:", cam.data.lens)
+    print("render resolution:", bpy.context.scene.render.resolution_x, bpy.context.scene.render.resolution_y)
+
 
 #######################################
 # Create screen 
@@ -145,8 +157,8 @@ if config["distortions"]["turbulence"] == 1:
         pos = np.array([0, dist, size_screen_height / 2 + config["BOS"]["height"]])
         #width= size_screen_width
         #height= size_screen_height
-        width = ((config["camera"]["sensor_size"]/config["camera"]["focal_length"])*config["distortions"]["turbulence_distance"][k])
-        height = width * (config["camera"]["resolution_y"]/config["camera"]["resolution_x"]) * 0.95
+        width = ((config["camera"]["sensor_size"]/config["camera"]["focal_length"])*config["distortions"]["turbulence_distance"][k])    # for exact size within the field of view of the camera
+        height = width * (config["camera"]["resolution_y"]/config["camera"]["resolution_x"])
         # width = 0.2
         width = height
         # height = width

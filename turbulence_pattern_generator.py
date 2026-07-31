@@ -68,8 +68,8 @@ def gaussian_field(size=200, sigma=0.15, amplitude=1.0, center=(0.0, 0.0)):
 # --------------------------------------------------
 # Generate a synthetic turbulence-like phase screen
 # --------------------------------------------------
-# f = field()
-f = gaussian_field()
+f = field()                   # for randomized field
+# f = gaussian_field()        # for gaussian field
 # Remove residual offset
 f -= np.mean(f)
 
