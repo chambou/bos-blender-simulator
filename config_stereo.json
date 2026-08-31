@@ -24,12 +24,12 @@
       "object_distance": 0.5,
       "object_scale": 0.5,
   
-      "solidify": 1,
-      "thickness": 0.002,
+      "solidify": 0,
+      "thickness": 0.01,
       "turbulence": 1,
       "turbulence_number": 1,
       "turbulence_path": [
-        "data/turbulence_screen_flat.tiff",
+        "data/hamamatsu_phase.tiff",
         "data/turbulence_screen_gaussian.tiff"
       ],
   

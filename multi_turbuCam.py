@@ -11,7 +11,7 @@ from scipy.fft import fft2, ifft2
 from pathlib import Path
 import json
 from scipy.fft import dctn, idctn
-from process_turbuCam import reconstruct_from_gradient
+from process_turbuCam import reconstruct_from_gradient, propagate_uncertainty
 
 def load_image(path):
     data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
@@ -20,8 +20,8 @@ def load_image(path):
     print(data.dtype, data.min(), data.max(), data.shape)
     return data
 
-# input_folder = Path("../experimental/28072026/variable_distance/images_1")
-input_folder = Path('../experimental/31072026/multiple_frames/captured_frames_tif_3/left_images') 
+input_folder = Path("../experimental/28072026/variable_distance/images_2")
+# input_folder = Path('../experimental/31072026/multiple_frames/captured_frames_tif_3/left_images') 
 
 img = "left"
 
@@ -50,6 +50,10 @@ blender_used = False
 max_deflections = []
 max_displacements = []
 sensitivities = []
+displacement_error = []
+deflection_error = []
+
+
 orig_frames = []    # video mode
 frames = []         # video mode
 
@@ -73,7 +77,8 @@ for k in range(0,N_imgs):
     img_now = glob.glob(os.path.join(input_folder, ext))[0]
     print("image now: ", img_now)
 
-    ref_frame = load_image(ref_path)[...,0]
+    # ref_frame = load_image(ref_path)[...,0]
+    ref_frame = load_image(ref_path)
     print('ref frame:', ref_frame.shape)
     turbu_frame = load_image(img_now)
     orig_frames.append(turbu_frame)
@@ -121,9 +126,26 @@ for k in range(0,N_imgs):
     #     plt.pause(0.5)  # Pause briefly so the GUI window updates
     # plt.show(block=False)
 
+    sigma_delta_px = (np.std(u) + np.std(v)) / 2
+    sigma_pos = 0.001
+    uv_mag = np.sqrt(u**2 + v**2)
+    S_m_error, eps_error, opd_error = propagate_uncertainty(z_A, z_D, f_m, sigma_pos, sigma_delta_px, uv_mag.max())
+
+    delta_error = sigma_delta_px * pitch
+    displacement_error.append(delta_error)
+    deflection_error.append(eps_error)
+    print("max deflection error: ", eps_error.max())
+    print("uv std: ", sigma_delta_px)
+    print("relative uv error: ", sigma_delta_px / uv_mag.max())
+
+
 
     print(k, " is finished")
-    # z_D += 0.2
+    z_D += 0.2
+
+
+np.save(os.path.join(input_folder,'results/max_displacements_m.npy'),max_displacements)
+np.save(os.path.join(input_folder,'results/max_deflections_mrad.npy'),max_deflections)
 
 mean_deflection = np.mean(max_deflections)
 std_deflection = np.std(max_deflections)
@@ -134,45 +156,74 @@ print("Std eps:", std_deflection)
 print("Variation:", coeff_var)
 # print(frames.shape)
 
-# stats_text = (
-#     f"Mean: {mean_deflection:.2f}\n" f"Std Dev: {std_deflection:.2f}\n"
-# )
+stats_text = (
+    f"Mean: {mean_deflection:.2f}\n" f"Std Dev: {std_deflection:.2f}\n" f"CV: {coeff_var:.2f} %\n"
+)
 
-# x = [20, 40, 60, 80, 100, 120]
+x = [20, 40, 60, 80, 100, 120]
 
-# plt.figure()
+plt.figure()
 # plt.plot(x, max_displacements, marker="o", color="b", linestyle="-")
-# plt.title("Maximum Displacements in the sensor")
-# plt.xlabel("Distance [cm]")
-# plt.ylabel("Magnitude [m]")
-# plt.grid(True)
-# plt.show(block=False)
+plt.errorbar(x, max_displacements, yerr=displacement_error,
+            fmt="o-",
+            color="navy",
+            ecolor="crimson",
+            capsize=4,
+            capthick=1.5,)
+for xi, yi in zip(x, max_displacements):
+    plt.annotate(
+        f"{yi:.1e}",
+        (xi, yi),
+        xytext=(7, -7),  # 7 pixels to the right, 0 pixels vertically
+        textcoords="offset points",
+        va="center",
+    )
+plt.title("Maximum Displacements in the sensor")
+plt.xlabel("$z_D$ [cm]")
+plt.ylabel("Magnitude [m]")
+plt.grid(False)
+plt.show(block=False)
 
-# plt.figure()
+plt.figure()
 # plt.plot(x, max_deflections, marker="o", color="b", linestyle="-")
-# plt.axhline(
-#     mean_deflection,
-#     color="r",
-#     linestyle="--",
-#     linewidth=1.5,
-#     label=f"Mean ({mean_deflection:.1f})",
-# )
-# # transform=plt.gca().transAxes places text using relative coordinates:
-# # (x=0.05 is 5% from left, y=0.95 is 95% from bottom)
-# plt.gca().text(
-#     0.75,
-#     0.95,
-#     stats_text,
-#     transform=plt.gca().transAxes,
-#     fontsize=10,
-#     verticalalignment="top",
-#     bbox=dict(boxstyle="round,pad=0.5", facecolor="white", alpha=0.8, edgecolor="gray")
-# )
-# plt.title("Maximum Deflections")
-# plt.xlabel("Distance [cm]")
-# plt.ylabel("Magnitude [mrad]")
-# plt.grid(True)
-# plt.show()
+plt.errorbar(x, max_deflections, yerr=deflection_error,
+            fmt="o-",
+            color="navy",
+            ecolor="crimson",
+            capsize=4,
+            capthick=1.5,)
+for xi, yi in zip(x, max_deflections):
+    plt.annotate(
+        f"{yi:.2f}",
+        (xi, yi),
+        xytext=(7, 7),  # 7 pixels to the right, 0 pixels vertically
+        textcoords="offset points",
+        va="center",
+    )
+plt.axhline(
+    mean_deflection,
+    color="r",
+    linestyle="--",
+    linewidth=1,
+    label=f"Mean ({mean_deflection:.1f})",
+)
+# transform=plt.gca().transAxes places text using relative coordinates:
+# (x=0.05 is 5% from left, y=0.95 is 95% from bottom)
+plt.gca().text(
+    0.75,
+    0.2,
+    stats_text,
+    transform=plt.gca().transAxes,
+    fontsize=10,
+    verticalalignment="top",
+    bbox=dict(boxstyle="round,pad=0.5", facecolor="white", alpha=0.8, edgecolor="gray")
+)
+plt.title("Maximum Deflections")
+plt.xlabel("$z_D$ [cm]")
+plt.ylabel("Magnitude [mrad]")
+plt.ylim([0, 1])
+plt.grid(False)
+plt.show()
 
 # --- Video creation (side by side) ---
 

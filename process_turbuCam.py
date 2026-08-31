@@ -39,6 +39,61 @@ def load_image(path):
     data = cv2.normalize(data, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
     print(data.dtype, data.min(), data.max(), data.shape)
     return data
+
+def propagate_uncertainty(z_A, z_D, f, sigma_pos, sigma_delta_px, delta_px):
+    # uncertainty propagation from u,v to OPD
+    # for scaled model setup
+
+    z_B = z_A + z_D
+    sigma_z_B = np.sqrt(2) * sigma_pos
+
+    S_m = (f * z_D) / (z_B - f)
+    dSm_dzA = (-f * z_D) / (z_B - f)**2
+    dSm_dzD = (f * (z_A - f)) / (z_B - f)**2
+    sigma_S_m = np.sqrt((dSm_dzA * sigma_pos)**2 + (dSm_dzD * sigma_pos)**2)
+    rel_S_m = sigma_S_m / S_m
+
+    rel_sigma_delta_px = sigma_delta_px / delta_px
+    rel_eps = np.sqrt(rel_sigma_delta_px**2 + rel_S_m**2)
+
+    rel_psi = sigma_pos / z_A
+    rel_OPD = np.sqrt(rel_eps**2 + rel_psi**2)
+
+ 
+    return rel_S_m, rel_eps, rel_OPD
+
+def opd_to_temperature(opd):
+    # function to predict temperature from opd data
+    # constants
+    t = 0.03       #physical path length, approximation [m]
+    n_0 = 1.000293  #reference refractive index, for calibration
+    p = 101325      #ambient pressure, approximation
+    T_0 = 273.15    #temperature at n_0, for calibration, [K]
+    R = 8.3145      #gas constant
+
+    #molar refractivity
+    A = R * (n_0**2 - 1) * T_0 / (3 * p)
+
+    ## if reducing offset 
+    # T_room_K = 24 + T_0
+    # n_expected_ambient = np.sqrt((3*A*p) / (R*T_room_K) + 1)
+    # OPD_expected_ambient = (n_expected_ambient - n_0) * t
+
+    # OPD_corrected = opd - (opd.mean() - OPD_expected_ambient)
+
+    # n_field = n_0 + OPD_corrected / t
+    # T = (3*A*p) / (R* (n_field**2 -1))
+
+    #OPD to n
+    n = n_0 + (opd / t)
+
+    # n to T
+    T = (3 * A * p) / (R * (n**2 - 1))
+
+    return T
+
+
+    
 # ------------------------------
 # CONFIGURATION
 # ------------------------------
@@ -54,8 +109,8 @@ else:
     print("Using experimental setup")
     # input_folder = Path("outputs/experiments")
     # input_folder = Path("outputs/render_results")
-    input_folder = Path("../experimental/23072026/hamamatsu/turb1/img")
-    # input_folder = Path("../experimental/27072026/stereo_40mm/sample_2/img")
+    # input_folder = Path("../experimental/23072026/hamamatsu/turb1/img")
+    input_folder = Path("../experimental/27072026/stereo_40mm/sample_2/img")
 output_folder = Path("outputs/processing_results")
 reference_mode = "first"   # options: "median", "first", "previous"
 save_fits_cube = False       # save full cube as FITS file - takes time!
@@ -181,21 +236,21 @@ for k in range(0,Ncams):
 
     else:
         # Configuration of the experimental setup
-        # B = 0.06        # 6 cm
-        # f_mm = 40             # camera specification
-        # sensor_mm = 3.84        # camera specification
-        # W_px = 1280     # width resolution
-        # z_A = 1.04
-        # z_B = 1.50       # 0.6 usually
-        # z_D = z_B - z_A
+        B = 0.06        # 6 cm
+        f_mm = 40             # camera specification
+        sensor_mm = 3.84        # camera specification
+        W_px = 1280     # width resolution
+        z_A = 1.04
+        z_B = 1.50       # 0.6 usually
+        z_D = z_B - z_A
 
         # hamamatsu orcacamera
-        f_mm = 40
-        sensor_mm = 13.312
-        z_A = 0.5
-        z_B = 1.45
-        z_D = z_B - z_A
-        W_px = 2048
+        # f_mm = 40
+        # sensor_mm = 13.312
+        # z_A = 0.5
+        # z_B = 1.45
+        # z_D = z_B - z_A
+        # W_px = 2048
 
         f_m = f_mm * 1e-3                                # focal length in metres
         f_px = (f_mm / sensor_mm) * W_px                # focal length in pixels
@@ -216,8 +271,11 @@ for k in range(0,Ncams):
     # deflection: pixels -> radians
     eps_x = delta_x / S_m
     eps_y = delta_y / S_m
-    deflection_mag = np.sqrt(delta_x**2 + delta_y**2) / S_m
+    # deflection_mag = np.sqrt(delta_x**2 + delta_y**2) / S_m
+    deflection_mag = np.sqrt(eps_x**2 + eps_y**2)
     print("Maximum deflection [rad]:", np.max(deflection_mag))
+    print("Sensitivity [m/rad]:", S_m)
+    print("psi screen [m/px]:", psi_screen)
 
     # displacement in the BOS pattern [m]
     delta_x_background = z_D * np.tan(eps_x)
@@ -228,6 +286,11 @@ for k in range(0,Ncams):
     # phase: pixel-integrated -> meters, technically the optical path difference (OPD)
     opd = reconstruct_from_gradient(eps_x,eps_y) * psi_screen
     print("Minimum OPD [m]:", np.min(opd))
+
+    # temperature prediction
+    temperature_field = opd_to_temperature(opd)
+    temp_labels = np.linspace(temperature_field.min(), temperature_field.max(), 6)
+    print(temp_labels - 273.15)
 
     # phase: estimate using arbitrary wavelength [rad]
     lambda_0 = 532e-9
@@ -246,6 +309,7 @@ for k in range(0,Ncams):
     np.save(os.path.join(output_folder,'cam'+str(k)+'_background_xdisp_m.npy'),delta_x_background)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_background_ydisp_m.npy'),delta_y_background)
     np.save(os.path.join(output_folder,'cam'+str(k)+'_background_disp_mag_m.npy'),background_disp_mag)
+    np.save(os.path.join(output_folder,'cam'+str(k)+'_temperature_field_Kelvin.npy'),temperature_field)
 
 
     # --- orcacamera simulation matching ---

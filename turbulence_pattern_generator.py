@@ -36,7 +36,7 @@ def field(size=200):
     k2[0, 0] = 1
 
     # Power-law spectrum
-    spectrum = k2 ** (-4.0)
+    spectrum = k2 ** (-3.0)
 
     # Complex Gaussian white noise in Fourier space
     noise = np.random.randn(size, size) + 1j * np.random.randn(size, size)

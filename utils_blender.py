@@ -186,7 +186,7 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
         pass
 
     # # =========================
-    # # FIX NORMAL ORIENTATION (NEW — placed here, after rotation is set)
+    # # FIX NORMAL ORIENTATION
     # # =========================
     # bpy.context.view_layer.objects.active = obj
     # obj.select_set(True)
