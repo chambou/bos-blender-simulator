@@ -92,6 +92,27 @@ def opd_to_temperature(opd):
 
     return T
 
+def plot_flow_vectors(u, v, step, scale=None, background=None):
+    H, W = u.shape
+    y, x = np.mgrid[0:H:step, 0:W:step]
+    u_sub = u[::step, ::step]
+    v_sub = v[::step, ::step]
+    
+    fig, ax = plt.subplots(figsize=(8, 8))
+    
+    if background is not None:
+        im = ax.imshow(background, cmap='gray', alpha=0.5)
+        # plt.colorbar(im, ax=ax, label='Displacement magnitude [px]')
+    
+    ax.quiver(x, y, u_sub, v_sub, color='red', scale=scale, 
+              width=0.004, headwidth=4)
+    
+    ax.set_xlabel('x [px]')
+    ax.set_ylabel('y [px]')
+    ax.invert_yaxis()   # image-style: y increases downward
+    ax.set_aspect('equal')
+    plt.tight_layout()
+    return fig
 
     
 # ------------------------------
@@ -99,7 +120,7 @@ def opd_to_temperature(opd):
 # ------------------------------
 
 # specify if blender is used
-blender_used = False
+blender_used = True
 
 if blender_used:
     print("Using Blender setup")
@@ -237,20 +258,20 @@ for k in range(0,Ncams):
     else:
         # Configuration of the experimental setup
         B = 0.06        # 6 cm
-        f_mm = 40             # camera specification
-        sensor_mm = 3.84        # camera specification
-        W_px = 1280     # width resolution
-        z_A = 1.04
-        z_B = 1.50       # 0.6 usually
-        z_D = z_B - z_A
+        # f_mm = 40             # camera specification
+        # sensor_mm = 3.84        # camera specification
+        # W_px = 1280     # width resolution
+        # z_A = 1.04
+        # z_B = 1.50       # 0.6 usually
+        # z_D = z_B - z_A
 
         # hamamatsu orcacamera
-        # f_mm = 40
-        # sensor_mm = 13.312
-        # z_A = 0.5
-        # z_B = 1.45
-        # z_D = z_B - z_A
-        # W_px = 2048
+        f_mm = 40
+        sensor_mm = 13.312
+        z_A = 0.5
+        z_B = 1.45
+        z_D = z_B - z_A
+        W_px = 2048
 
         f_m = f_mm * 1e-3                                # focal length in metres
         f_px = (f_mm / sensor_mm) * W_px                # focal length in pixels
@@ -267,6 +288,8 @@ for k in range(0,Ncams):
     delta_y = v * pitch
     displacement_mag = np.sqrt(u**2 + v**2) * pitch
     print("Maximum displacement in the sensor [m]:", np.max(displacement_mag))
+    fig = plot_flow_vectors(u, v, step=50, background=frames[0,...])
+    plt.savefig(f'flow_vectors{k}.png', dpi=300, bbox_inches='tight')
 
     # deflection: pixels -> radians
     eps_x = delta_x / S_m

@@ -123,8 +123,8 @@ def create_turbu_screen(vector_middle_camera, pos, width, height, displacement_p
     # PARAMETERS
     # =========================
     SUBDIV = 200
-    # STRENGTH = 0.05
-    STRENGTH = 1                # for real world matching
+    STRENGTH = 0.05
+    # STRENGTH = 1                # for real world matching
 
     # =========================
     # CREATE GRID

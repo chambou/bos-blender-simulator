@@ -27,12 +27,13 @@ cbar_L1 = plt.colorbar()
 cbar_L1.set_label('Deflection Magnitude [rad]')
 cbar_L1.set_ticks(tick_locs)
 plt.show(block=False)
+# print(np.max(array))
 
 
 array = np.load('outputs/processing_results/cam0_opd_m.npy')
 
 plt.figure(figsize=(8, 6))
-plt.imshow(array, cmap='viridis')
+plt.imshow(np.fliplr(array), cmap='viridis')
 tick_locs = np.linspace(array.min(), array.max(), 6)
 cbar_L1 = plt.colorbar()
 cbar_L1.set_label('Optical Path Difference (OPD) [m]')
@@ -362,7 +363,7 @@ cax2 = fig.add_subplot(gs[2])
 
 # Explicit vmin/vmax - removes any ambiguity about what range the colormap spans
 vmin, vmax = array_left.min(), array_left.max()
-im = ax.imshow(array_left, cmap='hot', vmin=vmin, vmax=vmax)
+im = ax.imshow(np.fliplr(array_left), cmap='hot', vmin=vmin, vmax=vmax)
 
 # Explicit tick positions, matching vmin/vmax exactly
 tick_locs = np.linspace(vmin, vmax, 6)
@@ -373,7 +374,7 @@ cbar1.set_label('Displacement in the Sensor [m]')
 
 cbar2 = fig.colorbar(im, cax=cax2)
 cbar2.set_ticks(tick_locs)   # SAME positions on the shared color scale
-S_m = 0.012602739726027398
+S_m = 0.02695035460992908   #orcacam config
 mrad_labels = [f"{(t/S_m)*1000:.2f}" for t in tick_locs]
 # mrad_labels = []
 # for t in tick_locs:

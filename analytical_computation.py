@@ -184,7 +184,7 @@ tick_locs = np.linspace(opd_pred.min(), opd_pred.max(), 6)
 cbar.set_label('Optical Path Difference (OPD) [m]')
 cbar.set_ticks(tick_locs)
 # plt.title('Optical Flow Magnit?')
-plt.show()
+plt.show(block=False)
 
 plt.figure(figsize=(8, 6))
 plt.imshow(opd, cmap='viridis')

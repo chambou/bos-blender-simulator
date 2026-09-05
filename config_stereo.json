@@ -6,15 +6,15 @@
       "screen_pattern_width": 0.8,
       "screen_pattern_height": 0.6,
       "screen_pattern_file": "data/bos_pattern.png",
-      "distance_camera_screen": 1.45,
+      "distance_camera_screen": 1,
       "height": 0.2
     },
   
     "camera": {
-      "sensor_size": 13.312,
-      "resolution_x": 2048,
-      "resolution_y": 2048,
-      "focal_length": 40,
+      "sensor_size": 5.6,
+      "resolution_x": 1920,
+      "resolution_y": 1080,
+      "focal_length": 10,
       "bit_depth": "16"
     },
   
@@ -29,7 +29,7 @@
       "turbulence": 1,
       "turbulence_number": 1,
       "turbulence_path": [
-        "data/hamamatsu_phase.tiff",
+        "data/turbulence_screen1.tiff",
         "data/turbulence_screen_gaussian.tiff"
       ],
   
@@ -65,7 +65,7 @@
     },
 
     "refractive_index": [
-      0.99994,
+      1.01,
       1.1
     ]
   }

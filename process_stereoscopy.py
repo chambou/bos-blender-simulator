@@ -191,47 +191,13 @@ def correlation_2d(cam0, cam1, kernel_center, kernel_size):
 
     return corr_scipy, best
 
-def masking(img, threshold_frac=0.1, min_region_size=500):
-    # """
-    # Create a binary mask marking pixels with significant phase content.
-    
-    # Parameters
-    # ----------
-    # phase : 2D array
-    #     Reconstructed phase map.
-    # threshold_frac : float
-    #     Threshold as a fraction of max |phase|.
-    # min_region_size : int
-    #     Minimum connected region size (pixels) to keep.
-    
-    # Returns
-    # -------
-    # mask : 2D boolean array
-    # """
-    # # Absolute threshold on phase magnitude
-    # threshold = threshold_frac * np.abs(img).max()
-    # # threshold = 1e-4
-    # mask = np.abs(img) > threshold
-    
-    # # # Optional: remove small isolated pixels (noise)
-    # # from scipy.ndimage import binary_opening, label
-    # # mask = binary_opening(mask, iterations=2)
-    
-    # # Optional: keep only large connected regions
-    # labeled, num = label(mask)
-    # for i in range(1, num + 1):
-    #     if np.sum(labeled == i) < min_region_size:
-    #         mask[labeled == i] = False
-
-    return mask
-
 # def magnitude_optical_flow(u_L, v_L, u_R, v_R):
 #     # --- this function takes the optical flow of left and right images as input and uses optical flow to see the correlation ---
 
 #     return magnitude
 
 # specify if blender is used
-blender_used = False
+blender_used = True
 
 # Load phase arrays
 cam0 = np.load(os.path.join(input_folder,'cam0_phase_radpx.npy'))
@@ -452,8 +418,6 @@ plt.text(
     fontsize=10,
     bbox=dict(facecolor='black', alpha=0.5, edgecolor='none', boxstyle='round,pad=0.3')
 )
-# plt.savefig(f"../Stereo/29062026/correlation_maps/turbulent/double_screen/different/{fname}", dpi=plt.gcf().dpi)
-# plt.savefig("../Stereo/29062026/correlation_maps/turbulent/double_screen/same/1_1.png", dpi=plt.gcf().dpi)
 plt.show(block=False)
 
 
